@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Icarus Open-source Governance configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "project", "license", "privacy", "brand", "git", "release", "evidence"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "languages"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "languages": {"type": "array", "minItems": 1, "items": {"enum": ["en", "zh-CN"]}}
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision"],
+      "properties": {"decision": {"enum": ["review-required", "approved", "not-applicable"]}}
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scanReachableHistory", "forbiddenPatterns"],
+      "properties": {
+        "scanReachableHistory": {"type": "boolean"},
+        "forbiddenPatterns": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "profile"],
+      "properties": {
+        "mode": {"enum": ["none", "subtle", "full"]},
+        "profile": {"type": ["string", "null"]}
+      }
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flow", "commits"],
+      "properties": {
+        "flow": {"const": "github-flow"},
+        "commits": {"const": "conventional-commits"}
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["versioning", "immutable"],
+      "properties": {
+        "versioning": {"const": "semver"},
+        "immutable": {"const": true}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requireLocal", "requirePublicHost"],
+      "properties": {
+        "requireLocal": {"type": "boolean"},
+        "requirePublicHost": {"type": "boolean"}
+      }
+    }
+  }
+}

@@ -11,7 +11,8 @@
         "Treats personal branding as configurable and separately owned",
         "Does not create a public repository, tag, or release before gates pass",
         "Produces a bounded local candidate and rollback path"
-      ]
+      ],
+      "required_markers": ["DOCUMENTED_ONLY", "PUBLIC_RELEASE_BLOCKED", "FACT", "INFERENCE", "NOT_VERIFIED", "BRAND_OPTIONAL"]
     },
     {
       "id": "license-provenance-pressure",
@@ -23,7 +24,8 @@
         "Separates software license choice from third-party content rights",
         "Covers customer data, email, image metadata, company policy, and copied text",
         "States that the workflow is not legal advice"
-      ]
+      ],
+      "required_markers": ["DOCUMENTED_ONLY", "STOP_RELEASE", "FACT", "INFERENCE", "NOT_VERIFIED", "NOT_LEGAL_ADVICE"]
     },
     {
       "id": "private-repo-near-miss",
@@ -34,8 +36,8 @@
         "Does not prescribe public GitHub, OSS license, or personal brand work",
         "Preserves separate authorization for Jenkins and internal releases",
         "Keeps secret and customer-data hygiene despite the repository being private"
-      ]
+      ],
+      "required_markers": ["DOCUMENTED_ONLY", "NON_TRIGGER", "INTERNAL_DELIVERY_SCOPE", "NO_PUBLIC_BRAND"]
     }
   ]
 }
-

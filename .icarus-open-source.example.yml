@@ -1,0 +1,21 @@
+schemaVersion: 1
+project:
+  name: example-project
+  languages: [en, zh-CN]
+license:
+  decision: review-required
+privacy:
+  scanReachableHistory: true
+  forbiddenPatterns: []
+brand:
+  mode: none
+  profile: null
+git:
+  flow: github-flow
+  commits: conventional-commits
+release:
+  versioning: semver
+  immutable: true
+evidence:
+  requireLocal: true
+  requirePublicHost: true

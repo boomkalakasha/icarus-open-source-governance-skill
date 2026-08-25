@@ -1,0 +1,9 @@
+{
+  "skill_name": "icarus-open-source-governance",
+  "cases": [
+    {"id": "public-extraction", "shouldTrigger": true, "reason": "Public extraction and GitHub release governance are requested."},
+    {"id": "brand-optional", "shouldTrigger": true, "reason": "A public repository requests configurable brand assets."},
+    {"id": "private-jenkins", "shouldTrigger": false, "reason": "The repository remains private and needs internal delivery rules."},
+    {"id": "generic-bugfix", "shouldTrigger": false, "reason": "No public-release, provenance, or GitHub governance work is requested."}
+  ]
+}

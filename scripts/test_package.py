@@ -1,0 +1,60 @@
+import hashlib
+import json
+import subprocess
+import unittest
+import zipfile
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DIST = ROOT / "dist"
+
+
+class PackageContractTests(unittest.TestCase):
+    def run_package(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["pwsh", "-NoProfile", "-File", str(ROOT / "scripts" / "package.ps1"), *args],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_one_staged_tree_produces_matching_skill_and_zip_manifests(self):
+        result = self.run_package()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        manifest = json.loads((DIST / "manifest.json").read_text(encoding="utf-8"))
+        self.assertIn(manifest["sourceTree"], {"clean", "dirty"})
+        archives = [DIST / artifact["name"] for artifact in manifest["artifacts"]]
+        self.assertEqual(2, len(archives))
+        self.assertTrue(all(path.is_file() for path in archives))
+        archive_names = []
+        for path in archives:
+            with zipfile.ZipFile(path) as archive:
+                archive_names.append(sorted(archive.namelist()))
+        self.assertEqual(archive_names[0], archive_names[1])
+        self.assertTrue(
+            {
+                "assets/brand/boomkalakasha/avatar.png",
+                "assets/brand/boomkalakasha/watermark-dark.svg",
+                "docs/brand/preview.html",
+            }.issubset(set(archive_names[0]))
+        )
+        for artifact, path in zip(manifest["artifacts"], archives):
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), artifact["sha256"])
+        sums = (DIST / "SHA256SUMS.txt").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(
+            {f"{artifact['sha256']}  {artifact['name']}" for artifact in manifest["artifacts"]},
+            set(sums),
+        )
+
+    def test_explicit_semver_version_controls_the_archive_name_and_manifest(self):
+        result = self.run_package("-Version", "1.0.1")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        manifest = json.loads((DIST / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual("1.0.1", manifest["version"])
+        self.assertIn("icarus-open-source-governance-1.0.1.zip", [artifact["name"] for artifact in manifest["artifacts"]])
+
+
+if __name__ == "__main__":
+    unittest.main()
