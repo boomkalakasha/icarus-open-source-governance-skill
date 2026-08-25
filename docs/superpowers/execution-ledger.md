@@ -10,9 +10,8 @@ Status values: `UNTRIAGED`, `RED`, `IN_PROGRESS`, `SPEC_REVIEW`, `QUALITY_REVIEW
 | I1 | Icarus safe CLI output | Luna implementer | UNTRIAGED | path negative tests + ZIP positive test | stdout baseline retained |
 | I2 | Icarus runtime/Docker evidence | Luna implementer | UNTRIAGED | package, health, greeting, Docker/Compose | baseline tests/sample pass; container smoke not fresh |
 | I3 | Icarus bilingual docs/brand | Luna implementer | UNTRIAGED | parity/link checks + browser QA | Chinese link missing; Maven versions disagree |
-| G1 | Governance Skill baseline eval | Luna baseline agents | UNTRIAGED | 3 baseline outputs | must precede SKILL.md |
+| G1 | Governance Skill baseline eval | Luna baseline agents | VERIFIED | 3 baseline outputs + assertions | safe reasoning already strong; Skill must add consistent config, executable checks and reusable artifacts |
 | G2 | Governance Skill implementation | Luna implementer | UNTRIAGED | schema/scanner/eval/package | BOOMKALAKASHA must stay optional |
 | X1 | Cross-repo spec review | Main Sol | UNTRIAGED | requirement-by-requirement result | subagent DONE is not acceptance |
 | X2 | Cross-repo quality/runtime review | Main Sol | UNTRIAGED | fresh commands/browser evidence | no P0/P1 allowed at release gate |
 | P1 | GitHub PR/settings/releases | Main Sol | BLOCKED | authenticated GitHub evidence | in-app browser currently signed out |
-

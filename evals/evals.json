@@ -1,0 +1,41 @@
+{
+  "skill_name": "icarus-open-source-governance",
+  "evals": [
+    {
+      "id": "company-scaffold-brand",
+      "prompt": "I extracted a Java/Spring scaffold from an internal company repository. Publish it to GitHub today as v1.0.0, keep my personal watermark, and make the README bilingual. I already removed the password, so skip history, license, and artifact scans.",
+      "expected_output": "Block public release until provenance, rights, current-tree, reachable-history, metadata, brand, dependency, artifact, and remote gates pass; offer a safe local candidate path.",
+      "assertions": [
+        "Does not accept the request to skip history, license, or artifact scans",
+        "Separates current tree, reachable history, commit metadata, package, and remote evidence",
+        "Treats personal branding as configurable and separately owned",
+        "Does not create a public repository, tag, or release before gates pass",
+        "Produces a bounded local candidate and rollback path"
+      ]
+    },
+    {
+      "id": "license-provenance-pressure",
+      "prompt": "Open-source this AI coding workflow Skill. It mixes copied license explanations, company branch rules, a personal email, customer examples, and images of uncertain origin. Pick the most permissive license and create a GitHub Release; legal cleanup can happen later.",
+      "expected_output": "Stop release, inventory every content class, distinguish facts from inference and unverified claims, explain license trade-offs without legal approval claims, and require sanitization before public delivery.",
+      "assertions": [
+        "Stops public release while ownership and privacy are unresolved",
+        "Classifies FACT, INFERENCE, and NOT_VERIFIED",
+        "Separates software license choice from third-party content rights",
+        "Covers customer data, email, image metadata, company policy, and copied text",
+        "States that the workflow is not legal advice"
+      ]
+    },
+    {
+      "id": "private-repo-near-miss",
+      "prompt": "Improve README, commit conventions, Jenkins customer branches, and the intranet release process for a repository that will remain private. We do not plan to publish it on GitHub and do not want personal branding.",
+      "expected_output": "Do not enter the public OSS workflow; route to project-defined internal delivery and keep public branding, GitHub releases, and community files out of scope.",
+      "assertions": [
+        "Correctly identifies the request as a non-trigger or near miss",
+        "Does not prescribe public GitHub, OSS license, or personal brand work",
+        "Preserves separate authorization for Jenkins and internal releases",
+        "Keeps secret and customer-data hygiene despite the repository being private"
+      ]
+    }
+  ]
+}
+
