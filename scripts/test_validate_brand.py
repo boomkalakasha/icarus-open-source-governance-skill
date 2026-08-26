@@ -7,6 +7,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import validate_brand  # noqa: E402
+
 BRAND = ROOT / "assets" / "brand" / "boomkalakasha"
 DOC = ROOT / "docs" / "brand" / "preview.html"
 WORDMARK = "BOOMKALAKASHA"
@@ -45,15 +48,13 @@ class BrandContractTests(unittest.TestCase):
             self.assertIn(WORDMARK, (BRAND / name).read_text(encoding="utf-8"), name)
 
     def test_png_dimensions_alpha_and_preview_size(self):
-        try:
-            from PIL import Image
-        except ImportError as exc:  # pragma: no cover - environment diagnostic
-            self.fail(f"Pillow is required for brand raster validation: {exc}")
-        with Image.open(BRAND / "avatar.png") as avatar:
-            self.assertEqual((1024, 1024), avatar.size)
-            self.assertIn("A", avatar.getbands(), "avatar.png must preserve alpha")
-        with Image.open(BRAND / "brand-preview.png") as preview:
-            self.assertEqual((1600, 900), preview.size)
+        avatar = validate_brand.read_png_contract(BRAND / "avatar.png")
+        preview = validate_brand.read_png_contract(BRAND / "brand-preview.png")
+        self.assertEqual((1024, 1024), avatar["size"])
+        self.assertTrue(avatar["has_alpha"], "avatar.png must preserve alpha")
+        self.assertEqual((1600, 900), preview["size"])
+        self.assertEqual([], avatar["metadata"])
+        self.assertEqual([], preview["metadata"])
 
     def test_wordmark_and_no_remote_content_in_specimen(self):
         text = DOC.read_text(encoding="utf-8")

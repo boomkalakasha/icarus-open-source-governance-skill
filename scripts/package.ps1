@@ -36,7 +36,7 @@ foreach ($entry in $includes) {
     if (-not (Test-Path -LiteralPath $source)) {
         throw "Required package source is missing: $entry"
     }
-    if ((Get-Item -LiteralPath $source).PSIsContainer) {
+    if ((Get-Item -LiteralPath $source -Force).PSIsContainer) {
         Get-ChildItem -LiteralPath $source -File -Recurse -Force |
             Where-Object { $_.FullName -notmatch '[\\/](__pycache__|dist)[\\/]' } |
             ForEach-Object {
@@ -53,9 +53,19 @@ foreach ($entry in $includes) {
 $skillPath = Join-Path $dist $skillName
 $zipPath = Join-Path $dist $zipName
 Remove-Item -LiteralPath $skillPath, $zipPath -Force -ErrorAction SilentlyContinue
-$stageEntries = Get-ChildItem -LiteralPath $stage -Force | ForEach-Object { $_.FullName }
-Compress-Archive -Path $stageEntries -DestinationPath $skillPath -CompressionLevel Optimal
-Compress-Archive -Path $stageEntries -DestinationPath $zipPath -CompressionLevel Optimal
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[IO.Compression.ZipFile]::CreateFromDirectory(
+    $stage,
+    $skillPath,
+    [IO.Compression.CompressionLevel]::Optimal,
+    $false
+)
+[IO.Compression.ZipFile]::CreateFromDirectory(
+    $stage,
+    $zipPath,
+    [IO.Compression.CompressionLevel]::Optimal,
+    $false
+)
 
 $artifacts = @($skillPath, $zipPath) | ForEach-Object {
     [ordered]@{
