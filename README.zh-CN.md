@@ -44,9 +44,11 @@ python scripts/validate.py --config .icarus-open-source.yml
 
 ## 本地证据与打包
 
-`scripts/scan_public_risks.py --history` 会扫描本地可达提交以及 author/committer 元数据；它是确定性的风险标记扫描，不是完整的秘密或权利审计。可通过 `--pattern` 加入项目特定规则，或通过 `--config .icarus-open-source.yml` 读取 `privacy.forbiddenPatterns` 和历史扫描偏好，并逐条调查发现。
+`scripts/scan_public_risks.py --history` 会扫描本地可达提交以及 author/committer 元数据，并对未变化的文本 blob 去重，同时保留首次发现位置；它是确定性的风险标记扫描，不是完整的秘密或权利审计。可通过 `--pattern` 加入项目特定规则，或通过 `--config .icarus-open-source.yml` 读取 `privacy.forbiddenPatterns` 和历史扫描偏好，并逐条调查发现。
 
 `scripts/package.ps1` 只暂存一次源树，再在 `dist/` 生成 `.skill`、`.zip`、`manifest.json` 和 `SHA256SUMS.txt`。manifest 会标明源树为 `clean` 或 `dirty`；只有干净的确切标签包才能进入发布审查。公开前仍须基于确切已审核标签重新核验发布资产。
+
+`VERSION` 声明本地包版本；该版本是否已经公开发布仍以 GitHub Release 为准，未打 tag 的候选不等于公开发布。
 
 ## 参考与支持
 

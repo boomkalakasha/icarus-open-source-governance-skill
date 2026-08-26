@@ -94,25 +94,36 @@ def scan_history(root: Path, rules: list[tuple[str, re.Pattern[str]]]) -> tuple[
     git(root, "rev-parse", "--is-inside-work-tree")
     commits = [line for line in git(root, "rev-list", "--all").splitlines() if line]
     findings: list[Finding] = []
-    blobs = 0
+    seen_blob_ids: set[str] = set()
+    text_blobs = 0
     for commit in commits:
         metadata = git(root, "show", "-s", "--format=%H%n%an%n%ae%n%cn%n%ce%n%B", commit)
         findings.extend(findings_for_text("history-metadata", commit, metadata, rules))
-        for relative in git(root, "ls-tree", "-r", "--name-only", commit).splitlines():
+        for entry in git(root, "ls-tree", "-r", commit).splitlines():
+            if "\t" not in entry:
+                continue
+            metadata_part, relative = entry.split("\t", 1)
+            fields = metadata_part.split()
+            if len(fields) != 3 or fields[1] != "blob":
+                continue
             if not relative or any(part in SKIP_PARTS for part in Path(relative).parts):
                 continue
+            blob_id = fields[2]
+            if blob_id in seen_blob_ids:
+                continue
+            seen_blob_ids.add(blob_id)
             result = subprocess.run(
-                ["git", "show", f"{commit}:{relative}"],
+                ["git", "cat-file", "blob", blob_id],
                 cwd=root,
                 capture_output=True,
                 check=False,
             )
             if result.returncode != 0 or len(result.stdout) > MAX_TEXT_BYTES or b"\x00" in result.stdout:
                 continue
-            blobs += 1
+            text_blobs += 1
             source = result.stdout.decode("utf-8", errors="replace")
             findings.extend(findings_for_text("history", f"{commit}:{relative}", source, rules))
-    return findings, len(commits), blobs
+    return findings, len(commits), text_blobs
 
 
 def main() -> int:
@@ -160,7 +171,7 @@ def main() -> int:
             print(f"ERROR: reachable history could not be scanned: {exc}")
             return 2
         findings.extend(history_findings)
-        print(f"PASS: reachable history scanned ({commit_count} commit(s), {blob_count} text blob(s))")
+        print(f"PASS: reachable history scanned ({commit_count} commit(s), {blob_count} unique text blob(s))")
     if findings:
         for finding in findings:
             print(f"FAIL: {finding.scope}:{finding.location}:{finding.line}:{finding.rule}")

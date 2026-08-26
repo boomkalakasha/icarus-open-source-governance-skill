@@ -13,6 +13,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = (
     "SKILL.md",
+    "VERSION",
     "README.md",
     "README.zh-CN.md",
     "LICENSE",
@@ -52,6 +53,7 @@ REQUIRED_FILES = (
 REQUIRED_SECTIONS = {"project", "license", "privacy", "brand", "git", "release", "evidence"}
 TEXT_SUFFIXES = {".md", ".py", ".json", ".yml", ".yaml", ".ps1", ".svg", ".html"}
 MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
+STABLE_SEMVER = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
 
 
 def parse_scalar(value: str) -> Any:
@@ -172,6 +174,9 @@ def validate_repository(root: Path, config_path: Path) -> list[str]:
             errors.append(f"missing required file: {relative}")
     if errors:
         return errors
+    version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    if not STABLE_SEMVER.fullmatch(version):
+        errors.append("VERSION must be stable SemVer")
     for path in iter_text_files(root):
         if path.read_bytes().startswith(b"\xef\xbb\xbf"):
             errors.append(f"{path.relative_to(root)}: UTF-8 BOM is not allowed")

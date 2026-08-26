@@ -89,6 +89,24 @@ class ValidateContractTests(unittest.TestCase):
         source = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
         self.assertIn("merge-base --is-ancestor", source)
 
+    def test_validator_requires_a_semver_version_source_and_release_checks_it(self):
+        with tempfile.TemporaryDirectory() as directory:
+            candidate = Path(directory) / "candidate"
+            shutil.copytree(ROOT, candidate, ignore=shutil.ignore_patterns(".git", "dist", "__pycache__", "*.pyc"))
+            (candidate / "VERSION").write_text("not-a-semver\n", encoding="utf-8")
+            result = self.run_validator("--root", str(candidate), "--config", ".icarus-open-source.example.yml")
+
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("VERSION must be stable SemVer", result.stdout)
+        workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+        self.assertIn('version_file="$(tr -d', workflow)
+
+    def test_release_changelog_records_the_current_version_source(self):
+        changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        self.assertEqual("1.0.2", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertIn("## [1.0.2] - 2026-08-26", changelog)
+        self.assertNotIn("## [Unreleased]", changelog)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -77,6 +77,27 @@ class PublicRiskScannerTests(unittest.TestCase):
         self.assertIn("history", result.stdout)
         self.assertIn("generic-secret-assignment", result.stdout)
 
+    def test_reachable_history_scans_each_reused_blob_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.git(root, "init")
+            self.git(root, "config", "user.email", "tests@example.invalid")
+            self.git(root, "config", "user.name", "Scanner Test")
+            (root / "README.md").write_text("safe\n", encoding="utf-8")
+            self.git(root, "add", ".")
+            self.git(root, "commit", "-m", "add readme")
+            target = root / "changes.txt"
+            target.write_text("one\n", encoding="utf-8")
+            self.git(root, "add", ".")
+            self.git(root, "commit", "-m", "add change")
+            target.write_text("two\n", encoding="utf-8")
+            self.git(root, "add", ".")
+            self.git(root, "commit", "-m", "update change")
+            result = self.run_scanner(root, "--history")
+
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("reachable history scanned (3 commit(s), 3 unique text blob(s))", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
