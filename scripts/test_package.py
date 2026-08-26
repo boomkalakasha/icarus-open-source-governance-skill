@@ -24,6 +24,11 @@ class PackageContractTests(unittest.TestCase):
         source = (ROOT / "scripts" / "package.ps1").read_text(encoding="utf-8")
         self.assertIn("Get-Item -LiteralPath $source -Force", source)
 
+    def test_release_workflow_uploads_only_the_tagged_archive(self):
+        workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+        self.assertNotIn("dist/*.zip", workflow)
+        self.assertIn('"dist/icarus-open-source-governance-${version}.zip"', workflow)
+
     def test_one_staged_tree_produces_matching_skill_and_zip_manifests(self):
         result = self.run_package()
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
@@ -54,11 +59,17 @@ class PackageContractTests(unittest.TestCase):
         )
 
     def test_explicit_semver_version_controls_the_archive_name_and_manifest(self):
+        first = self.run_package("-Version", "1.0.0")
+        self.assertEqual(0, first.returncode, first.stdout + first.stderr)
         result = self.run_package("-Version", "1.0.1")
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         manifest = json.loads((DIST / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual("1.0.1", manifest["version"])
         self.assertIn("icarus-open-source-governance-1.0.1.zip", [artifact["name"] for artifact in manifest["artifacts"]])
+        self.assertEqual(
+            ["icarus-open-source-governance-1.0.1.zip"],
+            sorted(path.name for path in DIST.glob("icarus-open-source-governance-*.zip")),
+        )
 
 
 if __name__ == "__main__":
