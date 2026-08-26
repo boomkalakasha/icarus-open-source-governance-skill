@@ -2,7 +2,7 @@
 param(
     [switch]$Release,
     [ValidatePattern('^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$')]
-    [string]$Version = '1.0.0'
+    [string]$Version = '1.0.1'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,6 +26,8 @@ if ($Release -and $isDirty) {
 }
 
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
+Get-ChildItem -LiteralPath $dist -Filter 'icarus-open-source-governance-*.zip' -File -Force |
+    Remove-Item -Force
 if (Test-Path -LiteralPath $stage) {
     Remove-Item -LiteralPath $stage -Recurse -Force
 }

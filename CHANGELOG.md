@@ -2,6 +2,13 @@
 
 All notable changes are documented here. Releases use immutable SemVer tags after their local and remote evidence gates are satisfied.
 
+## [1.0.1] - 2026-08-26
+
+### Fixed
+
+- Remove stale versioned ZIP files before packaging and upload only the archive matching the release tag.
+- Preserve top-level dot-prefixed files in Linux release archives without relying on Pillow for brand validation.
+
 ## [1.0.0] - 2026-08-25
 
 ### Added

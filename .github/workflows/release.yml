@@ -45,4 +45,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$RELEASE_TAG" dist/*.skill dist/*.zip dist/SHA256SUMS.txt --generate-notes
+          version="${RELEASE_TAG#v}"
+          gh release create "$RELEASE_TAG" \
+            "dist/icarus-open-source-governance-${version}.zip" \
+            dist/icarus-open-source-governance.skill \
+            dist/SHA256SUMS.txt \
+            --generate-notes
