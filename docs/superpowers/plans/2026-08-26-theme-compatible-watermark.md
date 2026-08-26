@@ -116,10 +116,18 @@ Run Python tests, `python scripts/verify-public-content.py --root .`, `mvnw.cmd 
 
 Compute SHA-256 for every `watermark-auto.svg` and hardened `watermark-dark.svg`. Expected: automatic files match the Governance canonical, and hardened dark files match it across all copies.
 
-- [ ] **Step 2: Commit and push each branch**
+- [x] **Step 2: Commit and push each branch**
 
 Use truthful `fix(brand): 提升水印明暗主题可读性` commits, push `fix/theme-compatible-watermark`, and keep the worktrees for PR feedback.
 
-- [ ] **Step 3: Create and merge PRs through required checks**
+- [x] **Step 3: Create and merge PRs through required checks**
 
 Open one PR per repository, include light/dark screenshots in evidence, wait for every required check, merge with squash, and verify `main` refs. Do not create or move SemVer tags.
+
+## Delivery evidence
+
+- AI-first Vibe Coding Skill: [PR #4](https://github.com/boomkalakasha/ai-first-vibe-coding-skill/pull/4), merged as `313be1f` after `validate-skill` and `codeql-python` passed.
+- Icarus AI Spring Scaffold: [PR #18](https://github.com/boomkalakasha/icarus-ai-spring-scaffold/pull/18), merged as `e35221a` after build/sample/public-content, dependency review and CodeQL checks passed.
+- Icarus Open-source Governance Skill: [PR #6](https://github.com/boomkalakasha/icarus-open-source-governance-skill/pull/6), merged as `e6bdd60` after validator and CodeQL checks passed.
+- `UI_OBSERVED`: forced light/dark local specimen captures and the GitHub dark-theme AI README branch showed a readable complete wordmark.
+- Canonical `watermark-auto.svg` SHA-256: `53D0652428691360E9E92E48EFDFBEA00DADABC7F1CE8C115B55C1A9CCB0D8A7`; all four repository copies matched before delivery.
