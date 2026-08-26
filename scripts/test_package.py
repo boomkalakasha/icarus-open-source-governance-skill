@@ -73,6 +73,12 @@ class PackageContractTests(unittest.TestCase):
             sorted(path.name for path in DIST.glob("icarus-open-source-governance-*.zip")),
         )
 
+    def test_default_package_version_comes_from_the_repository_version_source(self):
+        result = self.run_package()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        manifest = json.loads((DIST / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual((ROOT / "VERSION").read_text(encoding="utf-8").strip(), manifest["version"])
+
 
 if __name__ == "__main__":
     unittest.main()

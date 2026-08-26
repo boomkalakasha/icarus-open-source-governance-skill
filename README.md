@@ -44,9 +44,11 @@ python scripts/validate.py --config .icarus-open-source.yml
 
 ## Local evidence and package
 
-`scripts/scan_public_risks.py --history` scans local reachable commits and author/committer metadata; it is a deterministic marker scan, not a complete secret or rights assessment. Add project-specific patterns with `--pattern` or load `privacy.forbiddenPatterns` and its history preference with `--config .icarus-open-source.yml`; investigate every finding.
+`scripts/scan_public_risks.py --history` scans local reachable commits and author/committer metadata, de-duplicating unchanged text blobs while retaining a first-seen finding location. It is a deterministic marker scan, not a complete secret or rights assessment. Add project-specific patterns with `--pattern` or load `privacy.forbiddenPatterns` and its history preference with `--config .icarus-open-source.yml`; investigate every finding.
 
 `scripts/package.ps1` stages the same source tree once, then creates `.skill`, `.zip`, `manifest.json`, and `SHA256SUMS.txt` under `dist/`. The manifest marks the source tree `clean` or `dirty`; only a clean exact-tag package is eligible for release review. Verify release assets again from the exact reviewed tag before publishing.
+
+`VERSION` declares the local package version. GitHub Releases remain the source of truth for whether that version has been publicly published; an untagged candidate is not a public release.
 
 ## References and support
 

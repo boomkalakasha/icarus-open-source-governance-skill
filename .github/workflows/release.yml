@@ -37,6 +37,11 @@ jobs:
           git fetch --no-tags origin main:refs/remotes/origin/main
           git rev-parse "${RELEASE_TAG}^{commit}"
           git merge-base --is-ancestor "${RELEASE_TAG}^{commit}" refs/remotes/origin/main
+          version_file="$(tr -d '\r\n' < VERSION)"
+          if [[ "$version_file" != "${RELEASE_TAG#v}" ]]; then
+            echo "VERSION $version_file does not match release tag $RELEASE_TAG" >&2
+            exit 1
+          fi
       - run: python scripts/validate.py
       - run: python -m unittest discover -s scripts -p 'test_*.py'
       - run: python scripts/run_evals.py

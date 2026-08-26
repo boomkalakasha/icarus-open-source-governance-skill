@@ -2,21 +2,32 @@
 param(
     [switch]$Release,
     [ValidatePattern('^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$')]
-    [string]$Version = '1.0.1'
+    [string]$Version
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $root = Split-Path -Parent $PSScriptRoot
+$versionFile = Join-Path $root 'VERSION'
+if (-not (Test-Path -LiteralPath $versionFile -PathType Leaf)) {
+    throw 'VERSION is required for package naming.'
+}
+$sourceVersion = (Get-Content -LiteralPath $versionFile -Raw).Trim()
+if ($sourceVersion -notmatch '^\d+\.\d+\.\d+$') {
+    throw "VERSION must be stable SemVer: $sourceVersion"
+}
+$version = if ([string]::IsNullOrWhiteSpace($Version)) { $sourceVersion } else { $Version }
+if ($Release -and $version -ne $sourceVersion) {
+    throw "Release package version $version must match VERSION $sourceVersion."
+}
 $dist = Join-Path $root 'dist'
 $stage = Join-Path $dist 'stage'
-$version = $Version
 $skillName = "icarus-open-source-governance.skill"
 $zipName = "icarus-open-source-governance-$version.zip"
 $includes = @(
     'SKILL.md', 'README.md', 'README.zh-CN.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md',
-    'SECURITY.md', 'SUPPORT.md', 'CODE_OF_CONDUCT.md', 'compatibility.md', '.icarus-open-source.example.yml',
+    'SECURITY.md', 'SUPPORT.md', 'CODE_OF_CONDUCT.md', 'compatibility.md', 'VERSION', '.icarus-open-source.example.yml',
     'assets', 'docs/brand', 'schemas', 'references', 'templates', 'scripts', 'evals', '.github'
 )
 
