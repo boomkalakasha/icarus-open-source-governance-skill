@@ -39,6 +39,7 @@ class PackageContractTests(unittest.TestCase):
         self.assertEqual(archive_names[0], archive_names[1])
         self.assertTrue(
             {
+                ".icarus-open-source.example.yml",
                 "assets/brand/boomkalakasha/avatar.png",
                 "assets/brand/boomkalakasha/watermark-dark.svg",
                 "docs/brand/preview.html",
