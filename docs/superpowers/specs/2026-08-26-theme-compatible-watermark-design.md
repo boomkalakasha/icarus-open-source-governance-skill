@@ -10,7 +10,7 @@ The READMEs embed `watermark-dark.svg`, whose Midnight wordmark is intended for 
 
 ## Chosen design
 
-Add `watermark-auto.svg` as the default documentation asset. Its base rendering uses a Midnight wordmark with a Warm-white keyline, so the name remains identifiable even when a renderer ignores embedded CSS. A `prefers-color-scheme: dark` media query swaps the fill and keyline for stronger native dark-mode contrast. The existing `watermark-dark.svg` gains the same fallback keyline; `watermark-light.svg` stays the explicit dark-surface variant.
+Add `watermark-auto.svg` as the default documentation asset. Its base rendering uses a Midnight wordmark with a 3 px Warm-white keyline, so the name remains identifiable even when a renderer ignores embedded CSS. A `prefers-color-scheme: dark` media query swaps the fill and keyline for stronger native dark-mode contrast. The existing `watermark-dark.svg` gains the same fallback keyline; `watermark-light.svg` stays the explicit dark-surface variant.
 
 README files use only `watermark-auto.svg`. Explicit variants remain documented for controlled surfaces. Icarus adds the automatic watermark to both English and Chinese README files so all three public repositories expose the same brand behavior.
 
@@ -42,4 +42,3 @@ README files use only `watermark-auto.svg`. Explicit variants remain documented 
 - README files in all three repositories reference `watermark-auto.svg`.
 - All copies match the Governance canonical SHA-256.
 - No P0/P1 validator, CI, link, packaging, security or public-content regression remains.
-

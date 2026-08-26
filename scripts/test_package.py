@@ -47,6 +47,7 @@ class PackageContractTests(unittest.TestCase):
             {
                 ".icarus-open-source.example.yml",
                 "assets/brand/boomkalakasha/avatar.png",
+                "assets/brand/boomkalakasha/watermark-auto.svg",
                 "assets/brand/boomkalakasha/watermark-dark.svg",
                 "docs/brand/preview.html",
             }.issubset(set(archive_names[0]))

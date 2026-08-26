@@ -261,9 +261,15 @@
     <section aria-labelledby="watermark-heading">
       <div class="section-head">
         <div><p class="eyebrow">Watermarks / 04</p><h2 id="watermark-heading">Light in, light out.</h2></div>
-        <p>Choose the wordmark variant by surface. The mark stays chromatic; the text carries the contrast.</p>
+        <p>Use the automatic wordmark for unknown surfaces. Explicit variants remain available when the surface is controlled.</p>
       </div>
       <div class="watermarks">
+        <div class="watermark light-surface">
+          <div><p class="surface-label">Automatic / light surface</p><img class="canonical-watermark" src="../../assets/brand/boomkalakasha/watermark-auto.svg" alt="Adaptive BOOMKALAKASHA watermark on a light surface"></div>
+        </div>
+        <div class="watermark dark-surface">
+          <div><p class="surface-label">Automatic / dark surface</p><img class="canonical-watermark" src="../../assets/brand/boomkalakasha/watermark-auto.svg" alt="Adaptive BOOMKALAKASHA watermark on a dark surface"></div>
+        </div>
         <div class="watermark light-surface">
           <div><p class="surface-label">Light surface / watermark-dark.svg</p><img class="canonical-watermark" src="../../assets/brand/boomkalakasha/watermark-dark.svg" alt="BOOMKALAKASHA watermark on a light surface"></div>
         </div>
@@ -280,7 +286,7 @@
       </div>
       <div class="readme-layout">
         <article class="readme-card">
-          <div class="readme-top"><img class="readme-watermark" src="../../assets/brand/boomkalakasha/watermark-dark.svg" alt="BOOMKALAKASHA dark watermark"><small>maintainer signature / optional</small></div>
+          <div class="readme-top"><img class="readme-watermark" src="../../assets/brand/boomkalakasha/watermark-auto.svg" alt="Adaptive BOOMKALAKASHA watermark"><small>maintainer signature / optional</small></div>
           <h3>Icarus Open-source Governance</h3>
           <p>Evidence-led guidance for turning a repository into a public product: provenance, privacy, docs, releases, and the checks that keep claims honest.</p>
           <div class="code-line">$ python scripts/validate.py --current-tree</div>

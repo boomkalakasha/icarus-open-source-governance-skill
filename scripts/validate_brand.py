@@ -15,7 +15,7 @@ BRAND = ROOT / "assets" / "brand" / "boomkalakasha"
 SPECIMEN = ROOT / "docs" / "brand" / "preview.html"
 WORDMARK = "BOOMKALAKASHA"
 PALETTE = ("#10162F", "#35D6FF", "#FFB65A", "#FF6B6B", "#F7F4EC")
-SVG_NAMES = ("brand-mark.svg", "avatar.svg", "watermark-dark.svg", "watermark-light.svg")
+SVG_NAMES = ("brand-mark.svg", "avatar.svg", "watermark-dark.svg", "watermark-light.svg", "watermark-auto.svg")
 REQUIRED_NAMES = SVG_NAMES + (
     "avatar.png",
     "brand-preview.png",
@@ -137,9 +137,22 @@ def validate() -> list[str]:
             if color not in source:
                 errors.append(f"{name}: palette color missing: {color}")
 
-    for name in ("watermark-dark.svg", "watermark-light.svg"):
+    for name in ("watermark-dark.svg", "watermark-light.svg", "watermark-auto.svg"):
         if not re.search(rf">{WORDMARK}<", svg_sources.get(name, "")):
             errors.append(f"{name}: exact live wordmark missing")
+    auto = svg_sources.get("watermark-auto.svg", "")
+    for contract in (
+        "@media (prefers-color-scheme: dark)",
+        'class="wordmark"',
+        'fill="#10162F"',
+        'stroke="#F7F4EC"',
+        'stroke-width="3"',
+        'paint-order="stroke fill"',
+    ):
+        if contract not in auto:
+            errors.append(f"watermark-auto.svg: adaptive contrast contract missing: {contract}")
+    if not re.search(r"\.wordmark\s*\{[^}]*fill:\s*#F7F4EC;[^}]*stroke:\s*#10162F;", auto, re.S):
+        errors.append("watermark-auto.svg: dark-mode wordmark override missing")
     if "<rect width=\"256\" height=\"256\" fill=\"#10162F\"" not in svg_sources.get("avatar.svg", ""):
         errors.append("avatar.svg: Midnight square background missing")
 

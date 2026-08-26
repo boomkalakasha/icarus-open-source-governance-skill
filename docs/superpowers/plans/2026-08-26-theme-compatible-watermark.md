@@ -18,19 +18,19 @@
 - Modify: `assets/brand/boomkalakasha/brand-guidelines.md`
 - Modify: `docs/brand/preview.html`
 
-- [ ] **Step 1: Add a failing canonical asset test**
+- [x] **Step 1: Add a failing canonical asset test**
 
 Require `watermark-auto.svg`, its exact wordmark, `prefers-color-scheme: dark`, `.wordmark` class, Warm-white fallback stroke, and preview references on both light and dark surfaces.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run `python -m unittest scripts.test_validate_brand -v` from Governance. Expected: failures report missing `watermark-auto.svg` and missing automatic preview references.
 
-- [ ] **Step 3: Extend the validator contract**
+- [x] **Step 3: Extend the validator contract**
 
 Add `watermark-auto.svg` to `SVG_NAMES` and require its media query plus theme-neutral keyline without weakening existing forbidden-content or palette checks.
 
-- [ ] **Step 4: Re-run the focused test**
+- [x] **Step 4: Re-run the focused test**
 
 Run `python -m unittest scripts.test_validate_brand -v`. Expected: it still fails only because the production SVG and specimen have not yet been created.
 
@@ -44,19 +44,19 @@ Run `python -m unittest scripts.test_validate_brand -v`. Expected: it still fail
 - Modify: `README.md`
 - Modify: `README.zh-CN.md`
 
-- [ ] **Step 1: Add the automatic SVG**
+- [x] **Step 1: Add the automatic SVG**
 
-Copy the existing geometry, assign the wordmark a `.wordmark` class, use Midnight fill with Warm-white `1.8` keyline as fallback, and swap to Warm-white fill with Midnight keyline inside `@media (prefers-color-scheme: dark)`.
+Copy the existing geometry, assign the wordmark a `.wordmark` class, use Midnight fill with Warm-white `3` px keyline as fallback, and swap to Warm-white fill with Midnight keyline inside `@media (prefers-color-scheme: dark)`.
 
-- [ ] **Step 2: Harden the explicit light-surface asset**
+- [x] **Step 2: Harden the explicit light-surface asset**
 
-Give `watermark-dark.svg` a Warm-white `1.8` keyline so accidental use on a dark surface remains readable without changing its intended Midnight fill.
+Give `watermark-dark.svg` a Warm-white `3` px keyline so accidental use on a dark surface remains readable without changing its intended Midnight fill.
 
-- [ ] **Step 3: Update documentation and specimen**
+- [x] **Step 3: Update documentation and specimen**
 
 Point both Governance READMEs to `watermark-auto.svg`; document automatic and explicit usage; render automatic variants on both specimen surfaces.
 
-- [ ] **Step 4: Verify GREEN and render**
+- [x] **Step 4: Verify GREEN and render**
 
 Run `python -m unittest scripts.test_validate_brand -v`, `python scripts/validate_brand.py`, and `python scripts/validate.py`. Serve `docs/brand/preview.html`, force light/dark color schemes in a real browser, and capture both screenshots. Expected: tests pass and the complete wordmark remains readable in both captures.
 
@@ -74,15 +74,15 @@ Run `python -m unittest scripts.test_validate_brand -v`, `python scripts/validat
 - Modify: `scripts/test_product_docs.py`
 - Modify: `scripts/test_package.py`
 
-- [ ] **Step 1: Add failing copy and README tests**
+- [x] **Step 1: Add failing copy and README tests**
 
 Require both automatic copies, byte identity between `assets/` and `docs/assets/`, automatic README references, and package inclusion. Run `python -m unittest discover -s scripts -p "test_*.py"`; expected failure is missing automatic assets/references.
 
-- [ ] **Step 2: Copy canonical files and update docs**
+- [x] **Step 2: Copy canonical files and update docs**
 
 Copy Governance `watermark-auto.svg` and hardened `watermark-dark.svg` byte-for-byte into both AI asset directories, then update English/Chinese README and brand guidance.
 
-- [ ] **Step 3: Verify AI repository**
+- [x] **Step 3: Verify AI repository**
 
 Run unit tests, `python scripts/validate.py`, `python scripts/run_evals.py`, `pwsh -NoProfile -File scripts/package.ps1 -Version 1.1.1`, and `git diff --check`. Expected: all pass and the package contains `watermark-auto.svg`.
 
@@ -95,15 +95,15 @@ Run unit tests, `python scripts/validate.py`, `python scripts/run_evals.py`, `pw
 - Modify: `README.zh-CN.md`
 - Modify: `scripts/test_release_documentation.py`
 
-- [ ] **Step 1: Add a failing documentation asset test**
+- [x] **Step 1: Add a failing documentation asset test**
 
 Require both READMEs to embed `docs/assets/brand/watermark-auto.svg`, require its theme contract, and compare its SHA-256 with the supplied canonical path during cross-repository verification. Run the focused Python test; expected failure is missing asset/reference.
 
-- [ ] **Step 2: Copy canonical files and update READMEs**
+- [x] **Step 2: Copy canonical files and update READMEs**
 
 Copy the canonical automatic and hardened explicit files into `docs/assets/brand/`, then add the automatic watermark above the title in both READMEs.
 
-- [ ] **Step 3: Verify Icarus repository**
+- [x] **Step 3: Verify Icarus repository**
 
 Run Python tests, `python scripts/verify-public-content.py --root .`, `mvnw.cmd -B -ntp test`, and `git diff --check`. Expected: 13 Python checks with the known Windows symlink skip and 40 Java tests pass.
 
@@ -112,7 +112,7 @@ Run Python tests, `python scripts/verify-public-content.py --root .`, `mvnw.cmd 
 **Files:**
 - Verify: all changed files in the three repositories
 
-- [ ] **Step 1: Verify canonical hashes**
+- [x] **Step 1: Verify canonical hashes**
 
 Compute SHA-256 for every `watermark-auto.svg` and hardened `watermark-dark.svg`. Expected: automatic files match the Governance canonical, and hardened dark files match it across all copies.
 
@@ -123,4 +123,3 @@ Use truthful `fix(brand): 提升水印明暗主题可读性` commits, push `fix/
 - [ ] **Step 3: Create and merge PRs through required checks**
 
 Open one PR per repository, include light/dark screenshots in evidence, wait for every required check, merge with squash, and verify `main` refs. Do not create or move SemVer tags.
-
