@@ -28,6 +28,7 @@ class PackageContractTests(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
         self.assertNotIn("dist/*.zip", workflow)
         self.assertIn('"dist/icarus-open-source-governance-${version}.zip"', workflow)
+        self.assertIn("ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}", workflow)
 
     def test_one_staged_tree_produces_matching_skill_and_zip_manifests(self):
         result = self.run_package()
