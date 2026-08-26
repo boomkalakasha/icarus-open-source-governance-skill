@@ -4,6 +4,12 @@
 
 [English](README.md) · [技能说明](SKILL.md) · [配置示例](.icarus-open-source.example.yml) · [证据门禁](references/evidence-gates.md)
 
+> **先把风险说清楚，再把项目公开。**
+>
+> **Make the risks visible before making the project public.**
+
+在把内部原型公开之前，使用这套 Skill 扫描可达历史、显式记录隐私与来源风险、对齐中英双语文档，并整理供人工审查的发布证据。
+
 一套可复用、以证据为中心的治理流程：把仓库整理为公开开源候选，而不夸大已验证的事实。
 
 ## 60 秒路径
@@ -24,6 +30,11 @@ pwsh -NoProfile -File scripts/package.ps1
 - 提供中英双语公共文档与社区模板，并明确支持、安全和发布边界。
 - 品牌是可选的：附带的 BOOMKALAKASHA 套件仅为示例配置，不是项目默认项，也不代表项目归属。
 - 覆盖 GitHub Flow、Conventional Commits、不可变 SemVer、校验和、CI、CodeQL 和发布工作流；发布仍需审核与独立授权。
+
+## 配套项目
+
+- [AI-first Vibe Coding Skill](https://github.com/boomkalakasha/ai-first-vibe-coding-skill)：适合 Agent 实现、独立复核完成后，把项目送入开源发布门禁。
+- [Icarus AI Spring Scaffold](https://github.com/boomkalakasha/icarus-ai-spring-scaffold)：适合需要安全、可审查 Java 17 服务起点的新项目。
 
 ## 明确不承诺的内容
 

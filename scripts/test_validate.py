@@ -103,9 +103,22 @@ class ValidateContractTests(unittest.TestCase):
 
     def test_release_changelog_records_the_current_version_source(self):
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertEqual("1.0.2", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertEqual("1.0.3", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertIn("## [1.0.3] - 2026-08-26", changelog)
         self.assertIn("## [1.0.2] - 2026-08-26", changelog)
         self.assertNotIn("## [Unreleased]", changelog)
+
+    def test_readmes_lead_with_bilingual_value_proposition_and_companions(self):
+        english = (ROOT / "README.md").read_text(encoding="utf-8")
+        chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+        self.assertIn("Make the risks visible before making the project public.", english)
+        self.assertIn("Before publishing an internal prototype", english)
+        self.assertIn("https://github.com/boomkalakasha/ai-first-vibe-coding-skill", english)
+        self.assertIn("https://github.com/boomkalakasha/icarus-ai-spring-scaffold", english)
+        self.assertIn("先把风险说清楚，再把项目公开。", chinese)
+        self.assertIn("在把内部原型公开之前", chinese)
+        self.assertIn("https://github.com/boomkalakasha/ai-first-vibe-coding-skill", chinese)
+        self.assertIn("https://github.com/boomkalakasha/icarus-ai-spring-scaffold", chinese)
 
 
 if __name__ == "__main__":

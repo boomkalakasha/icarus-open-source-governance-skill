@@ -4,6 +4,12 @@
 
 [简体中文](README.zh-CN.md) · [Skill](SKILL.md) · [Configuration](.icarus-open-source.example.yml) · [Evidence gates](references/evidence-gates.md)
 
+> **先把风险说清楚，再把项目公开。**
+>
+> **Make the risks visible before making the project public.**
+
+Before publishing an internal prototype, use this Skill to scan reachable history, make privacy and provenance risks explicit, align bilingual documentation, and assemble release evidence for a human-reviewed decision.
+
 Reusable, evidence-led governance for turning a repository into a public open-source candidate without overstating what has been verified.
 
 ## 60-second path
@@ -24,6 +30,11 @@ These commands validate a local candidate. They do not create a repository, push
 - Bilingual public documentation and community templates with truthful support, security, and release boundaries.
 - Optional branding: the bundled BOOMKALAKASHA kit is an example profile, not a project default or ownership claim.
 - GitHub Flow, Conventional Commits, immutable SemVer, checksums, CI, CodeQL, and a release workflow that still requires review and separate authorization.
+
+## Companion projects
+
+- [AI-first Vibe Coding Skill](https://github.com/boomkalakasha/ai-first-vibe-coding-skill) — use it when agents are implementing and reviewing the project before the open-source gate.
+- [Icarus AI Spring Scaffold](https://github.com/boomkalakasha/icarus-ai-spring-scaffold) — use it when a new Java 17 service needs a safe, reviewable starting structure.
 
 ## What it deliberately does not promise
 
