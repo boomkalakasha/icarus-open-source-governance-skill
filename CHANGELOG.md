@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Releases use immutable SemVer tags after their local and remote evidence gates are satisfied.
 
+## [1.0.3] - 2026-08-26
+
+### Added
+
+- Added a first-glance bilingual value proposition, a concrete pre-publication scenario, and companion links to the AI-first and Icarus projects.
+
 ## [1.0.2] - 2026-08-26
 
 ### Fixed
