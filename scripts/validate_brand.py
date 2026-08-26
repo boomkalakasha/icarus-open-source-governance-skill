@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import re
+import struct
 import sys
 import xml.etree.ElementTree as ET
+import zlib
 from pathlib import Path
 
 
@@ -35,10 +37,56 @@ FORBIDDEN_HTML = (
     re.compile(r"[A-Za-z]:[\\/]"),
     re.compile(r"/(?:Users|home|tmp|var)/", re.I),
 )
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+PNG_METADATA_CHUNKS = {b"tEXt", b"zTXt", b"iTXt", b"tIME", b"eXIf", b"pHYs", b"gAMA", b"cHRM", b"sRGB", b"iCCP"}
 
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def read_png_contract(path: Path) -> dict[str, object]:
+    raw = path.read_bytes()
+    if not raw.startswith(PNG_SIGNATURE):
+        raise ValueError("invalid PNG signature")
+    offset = len(PNG_SIGNATURE)
+    width = height = color_type = None
+    metadata: list[str] = []
+    has_transparency_chunk = False
+    saw_end = False
+    while offset + 12 <= len(raw):
+        length = struct.unpack(">I", raw[offset : offset + 4])[0]
+        chunk_type = raw[offset + 4 : offset + 8]
+        data_start = offset + 8
+        data_end = data_start + length
+        crc_end = data_end + 4
+        if crc_end > len(raw):
+            raise ValueError("truncated PNG chunk")
+        chunk_data = raw[data_start:data_end]
+        expected_crc = struct.unpack(">I", raw[data_end:crc_end])[0]
+        actual_crc = zlib.crc32(chunk_type)
+        actual_crc = zlib.crc32(chunk_data, actual_crc) & 0xFFFFFFFF
+        if expected_crc != actual_crc:
+            raise ValueError(f"invalid CRC for {chunk_type.decode('ascii', errors='replace')}")
+        if chunk_type == b"IHDR":
+            if length != 13:
+                raise ValueError("invalid IHDR length")
+            width, height, _, color_type, _, _, _ = struct.unpack(">IIBBBBB", chunk_data)
+        elif chunk_type == b"tRNS":
+            has_transparency_chunk = True
+        elif chunk_type in PNG_METADATA_CHUNKS:
+            metadata.append(chunk_type.decode("ascii"))
+        elif chunk_type == b"IEND":
+            saw_end = True
+            break
+        offset = crc_end
+    if width is None or height is None or color_type is None or not saw_end:
+        raise ValueError("PNG is missing IHDR or IEND")
+    return {
+        "size": (width, height),
+        "has_alpha": color_type in (4, 6) or has_transparency_chunk,
+        "metadata": metadata,
+    }
 
 
 def validate() -> list[str]:
@@ -107,23 +155,19 @@ def validate() -> list[str]:
         if heading.lower() not in html.lower():
             errors.append(f"preview.html: section missing: {heading}")
 
-    try:
-        from PIL import Image
-    except ImportError as exc:  # pragma: no cover - environment diagnostic
-        errors.append(f"Pillow is required for raster validation: {exc}")
-    else:
-        for name, expected_size in (("avatar.png", (1024, 1024)), ("brand-preview.png", (1600, 900))):
-            path = BRAND / name
-            try:
-                with Image.open(path) as image:
-                    if image.size != expected_size:
-                        errors.append(f"{name}: expected {expected_size}, got {image.size}")
-                    if name == "avatar.png" and "A" not in image.getbands():
-                        errors.append("avatar.png: alpha channel missing")
-                    if image.info:
-                        errors.append(f"{name}: unexpected metadata keys: {sorted(image.info)}")
-            except (OSError, ValueError) as exc:
-                errors.append(f"{name}: unreadable raster ({exc})")
+    for name, expected_size in (("avatar.png", (1024, 1024)), ("brand-preview.png", (1600, 900))):
+        path = BRAND / name
+        try:
+            contract = read_png_contract(path)
+        except (OSError, ValueError) as exc:
+            errors.append(f"{name}: unreadable raster ({exc})")
+            continue
+        if contract["size"] != expected_size:
+            errors.append(f"{name}: expected {expected_size}, got {contract['size']}")
+        if name == "avatar.png" and not contract["has_alpha"]:
+            errors.append("avatar.png: alpha channel missing")
+        if contract["metadata"]:
+            errors.append(f"{name}: unexpected metadata chunks: {contract['metadata']}")
 
     guidelines = _read(BRAND / "brand-guidelines.md").lower()
     for keyword in ("palette", "clear space", "minimum", "accessibility", "misuse"):

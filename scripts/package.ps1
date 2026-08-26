@@ -36,7 +36,7 @@ foreach ($entry in $includes) {
     if (-not (Test-Path -LiteralPath $source)) {
         throw "Required package source is missing: $entry"
     }
-    if ((Get-Item -LiteralPath $source).PSIsContainer) {
+    if ((Get-Item -LiteralPath $source -Force).PSIsContainer) {
         Get-ChildItem -LiteralPath $source -File -Recurse -Force |
             Where-Object { $_.FullName -notmatch '[\\/](__pycache__|dist)[\\/]' } |
             ForEach-Object {

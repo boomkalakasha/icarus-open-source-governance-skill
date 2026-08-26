@@ -20,6 +20,10 @@ class PackageContractTests(unittest.TestCase):
             check=False,
         )
 
+    def test_dot_prefixed_package_entries_are_read_with_force_on_unix(self):
+        source = (ROOT / "scripts" / "package.ps1").read_text(encoding="utf-8")
+        self.assertIn("Get-Item -LiteralPath $source -Force", source)
+
     def test_one_staged_tree_produces_matching_skill_and_zip_manifests(self):
         result = self.run_package()
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
