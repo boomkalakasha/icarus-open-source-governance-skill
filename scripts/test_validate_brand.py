@@ -20,6 +20,7 @@ REQUIRED = (
     "avatar.png",
     "watermark-dark.svg",
     "watermark-light.svg",
+    "watermark-auto.svg",
     "brand-preview.png",
     "brand-guidelines.md",
 )
@@ -32,7 +33,7 @@ class BrandContractTests(unittest.TestCase):
         self.assertTrue(DOC.is_file(), "missing docs/brand/preview.html")
 
     def test_svg_contract_and_wordmark(self):
-        for name in ("brand-mark.svg", "avatar.svg", "watermark-dark.svg", "watermark-light.svg"):
+        for name in ("brand-mark.svg", "avatar.svg", "watermark-dark.svg", "watermark-light.svg", "watermark-auto.svg"):
             path = BRAND / name
             self.assertTrue(path.is_file(), name)
             text = path.read_text(encoding="utf-8")
@@ -44,8 +45,24 @@ class BrandContractTests(unittest.TestCase):
             self.assertNotRegex(text, re.compile(r"https?://(?!www\.w3\.org/2000/svg)", re.I), name)
             for color in PALETTE:
                 self.assertIn(color, text, f"{name} missing palette color {color}")
-        for name in ("watermark-dark.svg", "watermark-light.svg"):
+        for name in ("watermark-dark.svg", "watermark-light.svg", "watermark-auto.svg"):
             self.assertIn(WORDMARK, (BRAND / name).read_text(encoding="utf-8"), name)
+
+    def test_auto_watermark_has_theme_switch_and_no_css_fallback(self):
+        source = (BRAND / "watermark-auto.svg").read_text(encoding="utf-8")
+        self.assertIn("@media (prefers-color-scheme: dark)", source)
+        self.assertIn('class="wordmark"', source)
+        self.assertIn('fill="#10162F"', source)
+        self.assertIn('stroke="#F7F4EC"', source)
+        self.assertRegex(source, re.compile(r'<text[^>]*class="wordmark"[^>]*stroke-width="3"', re.S))
+        self.assertIn('paint-order="stroke fill"', source)
+        self.assertRegex(source, re.compile(r"\.wordmark\s*\{[^}]*fill:\s*#F7F4EC;[^}]*stroke:\s*#10162F;", re.S))
+
+    def test_readmes_use_automatic_watermark(self):
+        for name in ("README.md", "README.zh-CN.md"):
+            source = (ROOT / name).read_text(encoding="utf-8")
+            self.assertIn("assets/brand/boomkalakasha/watermark-auto.svg", source, name)
+            self.assertNotIn("assets/brand/boomkalakasha/watermark-dark.svg", source, name)
 
     def test_png_dimensions_alpha_and_preview_size(self):
         avatar = validate_brand.read_png_contract(BRAND / "avatar.png")
@@ -80,10 +97,11 @@ class BrandContractTests(unittest.TestCase):
 
     def test_canonical_watermark_references_and_terminal_dot(self):
         text = DOC.read_text(encoding="utf-8")
-        for name in ("watermark-dark.svg", "watermark-light.svg"):
+        for name in ("watermark-dark.svg", "watermark-light.svg", "watermark-auto.svg"):
             self.assertIn(f"../../assets/brand/boomkalakasha/{name}", text, name)
             source = (BRAND / name).read_text(encoding="utf-8")
             self.assertIn('circle cx="211" cy="126" r="4" fill="#35D6FF"', source, name)
+        self.assertGreaterEqual(text.count("../../assets/brand/boomkalakasha/watermark-auto.svg"), 2)
         watermark_section = text.split('<section aria-labelledby="watermark-heading">', 1)[1].split("</section>", 1)[0]
         self.assertNotIn("<text", watermark_section, "watermark markup must come from canonical SVG assets")
 

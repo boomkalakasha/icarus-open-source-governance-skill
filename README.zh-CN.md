@@ -1,4 +1,4 @@
-![BOOMKALAKASHA 水印](assets/brand/boomkalakasha/watermark-dark.svg)
+![BOOMKALAKASHA 水印](assets/brand/boomkalakasha/watermark-auto.svg)
 
 # Icarus 开源治理
 

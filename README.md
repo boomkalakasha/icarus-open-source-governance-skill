@@ -1,4 +1,4 @@
-![BOOMKALAKASHA watermark](assets/brand/boomkalakasha/watermark-dark.svg)
+![BOOMKALAKASHA watermark](assets/brand/boomkalakasha/watermark-auto.svg)
 
 # Icarus Open-source Governance
 

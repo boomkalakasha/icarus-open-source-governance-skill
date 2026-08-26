@@ -20,6 +20,7 @@ The colour values are deliberately flat. Do not add gradients, glossy effects, 3
 - `avatar.svg` is the square composition with a Midnight background. `avatar.png` is the 1024 × 1024 raster derivative for GitHub and other square profile surfaces.
 - `watermark-dark.svg` is for light backgrounds; its wordmark is Midnight.
 - `watermark-light.svg` is for Midnight or other dark backgrounds; its wordmark is Warm white with a Midnight keyline.
+- `watermark-auto.svg` is the default for README and unknown surfaces. It follows the host colour scheme and retains an opposite-colour keyline when CSS media queries are unavailable.
 - `brand-preview.png` is a fixed 1600 × 900 reference board. It is a visual reference, not a replacement for the source SVGs.
 - `docs/brand/preview.html` is a self-contained specimen for visual review at realistic sizes.
 
@@ -37,7 +38,7 @@ At 40 px, use the avatar composition or `brand-mark.svg` without additional stro
 
 ## Accessibility
 
-- Use `watermark-dark.svg` on light surfaces and `watermark-light.svg` on Midnight or another dark surface. The specimen shows both pairings.
+- Use `watermark-auto.svg` for README and unknown surfaces. Use `watermark-dark.svg` on controlled light surfaces and `watermark-light.svg` on controlled Midnight or dark surfaces. The specimen shows every pairing.
 - Preserve the Warm white and Midnight contrast for wordmarks; do not place the cyan/coral strokes behind body copy.
 - Keep the SVG `<title>` and `<desc>` elements intact when embedding the source files.
 - Provide adjacent text or an accessible label when the mark is used as navigation. The symbol alone is decorative if the same link already has a visible project name.
@@ -54,6 +55,5 @@ At 40 px, use the avatar composition or `brand-mark.svg` without additional stro
 
 - Do not alter the spelling, rotate or stretch the wordmark, or substitute a mascot, emoji, wings, weapons, explosions, or literal letter logo.
 - Do not add remote font/image dependencies, embedded base64 images, editor metadata, scripts, or local filesystem references to the SVGs.
-- Do not use the light watermark on a warm-white surface, or the dark watermark on Midnight, where the wordmark loses contrast.
+- Do not remove the automatic watermark keyline or its theme media query. Explicit variants still need the intended surface even though their keyline provides a misuse fallback.
 - Do not reduce the avatar below 40 px, crop the nodes, or overlay it with busy photography.
-
