@@ -103,7 +103,8 @@ class ValidateContractTests(unittest.TestCase):
 
     def test_release_changelog_records_the_current_version_source(self):
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertEqual("1.0.3", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertEqual("1.0.4", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertIn("## [1.0.4] - 2026-08-27", changelog)
         self.assertIn("## [1.0.3] - 2026-08-26", changelog)
         self.assertIn("## [1.0.2] - 2026-08-26", changelog)
         self.assertNotIn("## [Unreleased]", changelog)
@@ -119,6 +120,30 @@ class ValidateContractTests(unittest.TestCase):
         self.assertIn("在把内部原型公开之前", chinese)
         self.assertIn("https://github.com/boomkalakasha/ai-first-vibe-coding-skill", chinese)
         self.assertIn("https://github.com/boomkalakasha/icarus-ai-spring-scaffold", chinese)
+
+    def test_readmes_explain_governance_outcomes_and_first_review_path(self):
+        english = (ROOT / "README.md").read_text(encoding="utf-8")
+        chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+
+        self.assertIn("## At a glance", english)
+        self.assertIn("reachable commits, metadata, generated files and package contents", english)
+        self.assertIn("## 60-second path", english)
+        self.assertIn("review `dist/manifest.json`", english)
+        self.assertIn("`SHA256SUMS.txt` before requesting", english)
+        self.assertIn("## 一眼看懂：它能帮你做什么", chinese)
+        self.assertIn("可达提交、元数据、生成物和打包内容", chinese)
+        self.assertIn("## 60 秒路径", chinese)
+        self.assertIn("检查 `dist/manifest.json` 和 `SHA256SUMS.txt`", chinese)
+
+    def test_readmes_keep_first_review_dependency_free_and_explain_findings(self):
+        english = (ROOT / "README.md").read_text(encoding="utf-8")
+        chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+        for source, markers in (
+            (english, ("no project-specific package installation is required", "When a scan reports a finding", "reachable-history findings")),
+            (chinese, ("不需要安装项目专属依赖", "扫描发现问题后先分类再改", "可达历史发现")),
+        ):
+            for marker in markers:
+                self.assertIn(marker, source, marker)
 
 
 if __name__ == "__main__":

@@ -12,16 +12,47 @@
 
 一套可复用、以证据为中心的治理流程：把仓库整理为公开开源候选，而不夸大已验证的事实。
 
+最新公开稳定版是 [`v1.0.3`](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/tag/v1.0.3)。本工作树包含已复核的 `v1.0.4` 候选版本；它仍是本地候选，须完成独立复核、打 tag 和 Release 证据后才算公开版本。
+
+本地脚本只使用 Python 标准库和 PowerShell；第一次审查不需要安装项目专属依赖。
+
+## 一眼看懂：它能帮你做什么
+
+| 你的目标 | 这套 Skill 会帮你做什么 | 它支持的判断 |
+| --- | --- | --- |
+| 判断仓库能否安全公开 | 校验项目契约、隐私、许可证、品牌和发布输入 | 把可审查候选与不应贸然公开的“已就绪”说法分开 |
+| 看清历史会暴露什么 | 扫描可达提交、元数据、生成物和打包内容 | 把来源或隐私的隐患变成可调查的问题清单 |
+| 让公开文档更有分寸 | 保持中英导航对齐，品牌保持可选 | 文档易读，同时不把个人默认信息伪装成项目必选项 |
+| 组装别人能复核的发布物 | 生成制品、manifest、校验和，并串起 CI/安全门禁 | 给人工审核者具体证据，而不只是一个绿色命令 |
+
+常见场景包括：把内部原型整理成 GitHub 项目、交给客户或社区前检查仓库，
+或帮助团队理解为什么源码、历史、元数据和发布物必须分开审查。这套 Skill
+负责组织证据，不替你做法律、归属或生产决策。
+
 ## 60 秒路径
 
+第一次审查按这个顺序走：
+
+1. 复制配置示例，只替换能够举证的事实。
+2. 先校验契约，再扫描当前文件和可达历史。
+3. 逐条阅读发现，明确处理隐私、许可证、双语文档和品牌事项；不要把扫描通过
+   当成自动批准。
+4. 运行评测并打包候选，检查 `dist/manifest.json` 和 `SHA256SUMS.txt` 后，
+   再申请 PR、tag 或 GitHub Release。
+
 ```powershell
-python scripts/validate.py
+Copy-Item .icarus-open-source.example.yml .icarus-open-source.yml
+python scripts/validate.py --config .icarus-open-source.yml
 python scripts/scan_public_risks.py --history
 python scripts/run_evals.py
 pwsh -NoProfile -File scripts/package.ps1
 ```
 
 这些命令只验证本地候选，不会创建仓库、推送分支、发布标签、修改 GitHub 设置，也不证明生产就绪。
+
+扫描发现问题后先分类再改：当前树发现通常需要修改源码；可达历史发现可能需要删除内容、
+评估历史重写，或记录明确例外；元数据发现需要复核 author/committer。处理决定后重新运行
+相关扫描，并把人工复核记录和候选版本放在一起。
 
 ## 覆盖范围
 
