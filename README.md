@@ -12,16 +12,50 @@ Before publishing an internal prototype, use this Skill to scan reachable histor
 
 Reusable, evidence-led governance for turning a repository into a public open-source candidate without overstating what has been verified.
 
+The latest public stable release is [`v1.0.3`](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/tag/v1.0.3). This source tree contains the reviewed `v1.0.4` candidate; it remains a local candidate until its own review, tag and Release evidence are complete.
+
+The local scripts use Python's standard library and PowerShell; no project-specific package installation is required for this first review path.
+
+## At a glance
+
+| If you need to... | This Skill helps you... | The decision it supports |
+| --- | --- | --- |
+| Decide whether a repository is safe to publish | Validate the project contract, privacy, license, brand and release inputs | Separate a reviewable candidate from an unsafe “ready” claim |
+| Understand what history exposes | Scan reachable commits, metadata, generated files and package contents | Turn hidden provenance or privacy surprises into findings to investigate |
+| Make public documentation feel intentional | Keep Chinese and English navigation aligned and make branding optional | Publish docs that are readable without making personal defaults look mandatory |
+| Assemble a release that others can inspect | Build an evidence bundle with package, manifest, checksums and CI/security gates | Give a human reviewer concrete release evidence, not a green command alone |
+
+Common uses include preparing an internal prototype for GitHub, checking a
+repository before handing it to a client or community, or teaching a team why
+source, history, metadata and release assets need separate review. The Skill
+organizes evidence; it does not make legal, ownership or production decisions.
+
 ## 60-second path
 
+For a first review, follow this order:
+
+1. Copy the example configuration and replace only facts you can support.
+2. Validate the contract, then scan current files and reachable history.
+3. Read every finding and decide privacy, license, bilingual-doc and branding
+   actions instead of treating a passing scan as approval.
+4. Run evaluations and package the candidate; review `dist/manifest.json` and
+   `SHA256SUMS.txt` before requesting a PR, tag or GitHub Release.
+
 ```powershell
-python scripts/validate.py
+Copy-Item .icarus-open-source.example.yml .icarus-open-source.yml
+python scripts/validate.py --config .icarus-open-source.yml
 python scripts/scan_public_risks.py --history
 python scripts/run_evals.py
 pwsh -NoProfile -File scripts/package.ps1
 ```
 
 These commands validate a local candidate. They do not create a repository, push a branch, publish a tag, change GitHub settings, or prove production readiness.
+
+When a scan reports a finding, classify it before editing: current-tree findings
+usually need a source change; reachable-history findings may require a removal,
+history rewrite decision or an explicit exception; metadata findings need an
+author/committer review. Re-run the relevant scan after the decision and keep
+the human review record with the candidate.
 
 ## What it covers
 

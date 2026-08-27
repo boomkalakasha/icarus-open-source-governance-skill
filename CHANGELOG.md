@@ -2,6 +2,20 @@
 
 All notable changes are documented here. Releases use immutable SemVer tags after their local and remote evidence gates are satisfied.
 
+## [1.0.4] - 2026-08-27
+
+> Candidate notes for the next release; this version is not public until its
+> tag, CI, assets, and release gates are independently verified.
+
+### Changed
+
+- Reworked the English and Chinese READMEs around a core-feature table and a
+  dependency-free 60-second review path, so a new maintainer can understand
+  the Skill's value and produce inspectable evidence without guessing the
+  workflow.
+- Added regression coverage for the value proposition, first-review commands,
+  and finding-classification guidance in both language editions.
+
 ## [1.0.3] - 2026-08-26
 
 ### Added
