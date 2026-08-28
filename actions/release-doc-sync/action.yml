@@ -1,0 +1,40 @@
+name: Icarus release documentation gate
+description: Verify SemVer alignment and dynamic GitHub Release facts in bilingual README files.
+
+inputs:
+  tag:
+    description: Stable release tag in vMAJOR.MINOR.PATCH form.
+    required: true
+  version:
+    description: Resolved source version without the v prefix.
+    required: true
+  repository:
+    description: GitHub owner/name slug.
+    required: true
+  readme:
+    description: Primary README path.
+    required: false
+    default: README.md
+  readme_zh:
+    description: Chinese README path.
+    required: false
+    default: README.zh-CN.md
+
+runs:
+  using: composite
+  steps:
+    - name: Check release documentation facts
+      shell: bash
+      run: >-
+        python "$GITHUB_ACTION_PATH/../../scripts/check_release_docs.py"
+        --tag "$INPUT_TAG"
+        --version "$INPUT_VERSION"
+        --repository "$INPUT_REPOSITORY"
+        --readme "$INPUT_README"
+        --readme "$INPUT_README_ZH"
+      env:
+        INPUT_TAG: ${{ inputs.tag }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_README: ${{ inputs.readme }}
+        INPUT_README_ZH: ${{ inputs.readme_zh }}

@@ -32,9 +32,12 @@ REQUIRED_FILES = (
     "references/licensing.md",
     "references/github-delivery.md",
     "references/evidence-gates.md",
+    "references/release-documentation-sync.md",
     "scripts/scan_public_risks.py",
+    "scripts/check_release_docs.py",
     "scripts/package.ps1",
     "scripts/run_evals.py",
+    "actions/release-doc-sync/action.yml",
     "evals/evals.json",
     "evals/trigger-evals.json",
     "templates/README.md",
@@ -201,6 +204,23 @@ def validate_repository(root: Path, config_path: Path) -> list[str]:
             errors.append(f"{workflow.relative_to(root)}: pull_request_target is forbidden")
         for line in source.splitlines():
             if "uses:" not in line:
+                continue
+            action_reference = line.split("uses:", 1)[1].split("#", 1)[0].strip().strip("'\"")
+            if action_reference.startswith("./"):
+                action_path = (root / action_reference).resolve()
+                try:
+                    action_path.relative_to(root)
+                except ValueError:
+                    errors.append(
+                        f"{workflow.relative_to(root)}: local action escapes the repository: {action_reference}"
+                    )
+                    continue
+                if not action_path.is_dir() or not any(
+                    (action_path / filename).is_file() for filename in ("action.yml", "action.yaml")
+                ):
+                    errors.append(
+                        f"{workflow.relative_to(root)}: local action is missing action.yml/action.yaml: {action_reference}"
+                    )
                 continue
             match = re.search(r"uses:\s*[^@\s]+@([0-9a-f]{40})\b", line)
             if match is None:

@@ -10,9 +10,14 @@
 
 在把内部原型公开之前，使用这套 Skill 扫描可达历史、显式记录隐私与来源风险、对齐中英双语文档，并整理供人工审查的发布证据。
 
-一套可复用、以证据为中心的治理流程：把仓库整理为公开开源候选，而不夸大已验证的事实。
+把隐私、来源、文档、许可证和发布证据串成一条可执行、可复核的路径，让内部仓库能够审慎走向开源，而不夸大已经验证的事实。
 
-最新公开稳定版是 [`v1.0.3`](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/tag/v1.0.3)。本工作树包含已复核的 `v1.0.4` 候选版本；它仍是本地候选，须完成独立复核、打 tag 和 Release 证据后才算公开版本。
+<!-- icarus-release-fact: dynamic -->
+公开物料与状态请查看
+[最新 GitHub Release](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/latest)
+和[完整发布记录](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases)。
+未打标签的源码仍是候选；只有复核、标签、CI、资产与 Release 证据完整后，
+才能作为公开版本。
 
 本地脚本只使用 Python 标准库和 PowerShell；第一次审查不需要安装项目专属依赖。
 
@@ -54,6 +59,21 @@ pwsh -NoProfile -File scripts/package.ps1
 评估历史重写，或记录明确例外；元数据发现需要复核 author/committer。处理决定后重新运行
 相关扫描，并把人工复核记录和候选版本放在一起。
 
+## 你会得到什么
+
+**示意证据摘要——以下为已脱敏样例，不是本仓库的实际扫描结果：**
+
+| 证据流 | 示例发现 | 门禁 |
+| --- | --- | --- |
+| 当前树 | 未发现配置中的私有主机模式 | `PASS` |
+| 可达历史 | 发现一个疑似令牌值：`[REDACTED_SECRET]` | `P1 HOLD`，等待来源复核 |
+| 双语文档 | 导航与动态发布事实标记一致 | `PASS` |
+| 打包 | 由同一暂存树生成 manifest 与 SHA-256 | `LOCAL_PASS` |
+| 公开宿主 | 标签、CI、资产与仓库设置 | `NOT_OBSERVED` |
+
+示例结论：在历史发现被处理，或由有权限的复核人明确接受之前，
+**暂停公开发布**。本地扫描全绿也不会自动升级公开宿主证据。
+
 ## 覆盖范围
 
 - 为项目、许可证决策、隐私、品牌、Git、发布和证据门禁提供小型 `.icarus-open-source.yml` 契约。
@@ -61,6 +81,7 @@ pwsh -NoProfile -File scripts/package.ps1
 - 提供中英双语公共文档与社区模板，并明确支持、安全和发布边界。
 - 品牌是可选的：附带的 BOOMKALAKASHA 套件仅为示例配置，不是项目默认项，也不代表项目归属。
 - 覆盖 GitHub Flow、Conventional Commits、不可变 SemVer、校验和、CI、CodeQL 和发布工作流；发布仍需审核与独立授权。
+- 提供可复用的发布文档门禁，在打包前校验 tag/源码版本一致，并让 README 的发布事实保持动态。
 
 ## 配套项目
 
@@ -98,6 +119,7 @@ python scripts/validate.py --config .icarus-open-source.yml
 - [隐私与来源](references/privacy-and-provenance.md)
 - [文档与本地化](references/documentation-and-localization.md)
 - [GitHub 交付](references/github-delivery.md)
+- [发布文档同步](references/release-documentation-sync.md)
 - [贡献](CONTRIBUTING.md) · [安全](SECURITY.md) · [支持](SUPPORT.md) · [变更记录](CHANGELOG.md) · [许可证](LICENSE)
 
 GitHub 行为以官方 [社区健康文件](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file)、[Release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) 和 [CodeQL](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning-with-codeql) 文档为准。

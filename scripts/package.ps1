@@ -28,7 +28,7 @@ $zipName = "icarus-open-source-governance-$version.zip"
 $includes = @(
     'SKILL.md', 'README.md', 'README.zh-CN.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md',
     'SECURITY.md', 'SUPPORT.md', 'CODE_OF_CONDUCT.md', 'compatibility.md', 'VERSION', '.icarus-open-source.example.yml',
-    'assets', 'docs/brand', 'schemas', 'references', 'templates', 'scripts', 'evals', '.github'
+    'actions', 'assets', 'docs/brand', 'schemas', 'references', 'templates', 'scripts', 'evals', '.github'
 )
 
 $isDirty = [bool](git -C $root status --porcelain)
