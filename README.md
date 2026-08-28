@@ -10,9 +10,14 @@
 
 Before publishing an internal prototype, use this Skill to scan reachable history, make privacy and provenance risks explicit, align bilingual documentation, and assemble release evidence for a human-reviewed decision.
 
-Reusable, evidence-led governance for turning a repository into a public open-source candidate without overstating what has been verified.
+Turn privacy, provenance, documentation, licensing, and release evidence into one executable, reviewable path from internal repository to public open-source candidate.
 
-The latest public stable release is [`v1.0.3`](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/tag/v1.0.3). This source tree contains the reviewed `v1.0.4` candidate; it remains a local candidate until its own review, tag and Release evidence are complete.
+<!-- icarus-release-fact: dynamic -->
+Public packages and status are available from the
+[latest GitHub Release](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/latest)
+and the [complete release history](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases).
+An untagged source tree remains a candidate until its review, tag, CI, assets,
+and Release evidence are complete.
 
 The local scripts use Python's standard library and PowerShell; no project-specific package installation is required for this first review path.
 
@@ -57,6 +62,23 @@ history rewrite decision or an explicit exception; metadata findings need an
 author/committer review. Re-run the relevant scan after the decision and keep
 the human review record with the candidate.
 
+## What you get
+
+**Illustrative evidence summary — redacted sample, not a scan result for this
+repository:**
+
+| Evidence stream | Example finding | Gate |
+| --- | --- | --- |
+| Current tree | No configured private-host pattern found | `PASS` |
+| Reachable history | One token-shaped value: `[REDACTED_SECRET]` | `P1 HOLD` pending provenance review |
+| Bilingual docs | Navigation and release-fact markers aligned | `PASS` |
+| Package | Manifest and SHA-256 generated from one staged tree | `LOCAL_PASS` |
+| Public host | Tag, CI run, assets and repository settings | `NOT_OBSERVED` |
+
+Example decision: **HOLD public release** until the history finding is resolved
+or explicitly accepted by an authorized reviewer. A local green scan alone
+never upgrades the public-host evidence.
+
 ## What it covers
 
 - A small `.icarus-open-source.yml` contract for project, license decision, privacy, brand, Git, release, and evidence gates.
@@ -64,6 +86,7 @@ the human review record with the candidate.
 - Bilingual public documentation and community templates with truthful support, security, and release boundaries.
 - Optional branding: the bundled BOOMKALAKASHA kit is an example profile, not a project default or ownership claim.
 - GitHub Flow, Conventional Commits, immutable SemVer, checksums, CI, CodeQL, and a release workflow that still requires review and separate authorization.
+- A reusable release-documentation gate that keeps README release facts dynamic and checks tag/source-version alignment before packaging.
 
 ## Companion projects
 
@@ -101,6 +124,7 @@ python scripts/validate.py --config .icarus-open-source.yml
 - [Privacy and provenance](references/privacy-and-provenance.md)
 - [Documentation and localization](references/documentation-and-localization.md)
 - [GitHub delivery](references/github-delivery.md)
+- [Release documentation synchronization](references/release-documentation-sync.md)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Support](SUPPORT.md) · [Changelog](CHANGELOG.md) · [License](LICENSE)
 
 For GitHub behavior, use the official [community health](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file), [release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases), and [CodeQL](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning-with-codeql) documentation as the current source of truth.

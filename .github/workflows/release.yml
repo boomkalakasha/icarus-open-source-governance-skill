@@ -27,6 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Verify immutable SemVer tag is reachable from main
+        id: release-metadata
         shell: bash
         run: |
           set -euo pipefail
@@ -42,6 +43,13 @@ jobs:
             echo "VERSION $version_file does not match release tag $RELEASE_TAG" >&2
             exit 1
           fi
+          echo "version=$version_file" >> "$GITHUB_OUTPUT"
+      - name: Verify dynamic README release facts
+        uses: ./actions/release-doc-sync
+        with:
+          tag: ${{ env.RELEASE_TAG }}
+          version: ${{ steps.release-metadata.outputs.version }}
+          repository: ${{ github.repository }}
       - run: python scripts/validate.py
       - run: python -m unittest discover -s scripts -p 'test_*.py'
       - run: python scripts/run_evals.py

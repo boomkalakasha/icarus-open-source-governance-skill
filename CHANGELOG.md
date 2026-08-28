@@ -2,6 +2,27 @@
 
 All notable changes are documented here. Releases use immutable SemVer tags after their local and remote evidence gates are satisfied.
 
+## [1.0.5] - 2026-08-28
+
+> Candidate notes for the next release; this version is not public until its
+> tag, CI, assets, and release gates are independently verified.
+
+### Added
+
+- Added a reusable composite action that checks stable SemVer alignment and
+  bilingual README release facts before packaging.
+- Added deterministic tests and guidance for adopting the release-documentation
+  gate from another repository through an immutable reviewed commit SHA.
+- Added an illustrative, redacted release-evidence summary so maintainers can
+  see the expected decision output before reading the detailed references.
+
+### Changed
+
+- Replaced hard-coded "latest release" claims with dynamic GitHub Release links
+  and packaged the reusable action with the Skill artifact.
+- Tightened the bilingual first-glance description around privacy, provenance,
+  documentation, licensing, and inspectable release evidence.
+
 ## [1.0.4] - 2026-08-27
 
 > Candidate notes for the next release; this version is not public until its

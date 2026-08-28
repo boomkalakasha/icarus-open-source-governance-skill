@@ -80,6 +80,49 @@ class ValidateContractTests(unittest.TestCase):
         self.assertEqual(1, result.returncode, result.stdout + result.stderr)
         self.assertIn("action reference must be pinned", result.stdout)
 
+    def test_validator_allows_a_repository_local_composite_action(self):
+        with tempfile.TemporaryDirectory() as directory:
+            candidate = Path(directory) / "candidate"
+            shutil.copytree(ROOT, candidate, ignore=shutil.ignore_patterns(".git", "dist", "__pycache__", "*.pyc"))
+            workflow = candidate / ".github" / "workflows" / "ci.yml"
+            workflow.write_text(
+                workflow.read_text(encoding="utf-8")
+                + "\n  local-action-contract:\n"
+                + "    runs-on: ubuntu-latest\n"
+                + "    steps:\n"
+                + "      - uses: ./actions/release-doc-sync\n",
+                encoding="utf-8",
+            )
+            result = self.run_validator("--root", str(candidate), "--config", ".icarus-open-source.example.yml")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_validator_rejects_missing_or_escaping_local_actions(self):
+        for reference, expected in (
+            ("./actions/does-not-exist", "local action is missing"),
+            ("./../outside-action", "local action escapes the repository"),
+        ):
+            with self.subTest(reference=reference), tempfile.TemporaryDirectory() as directory:
+                candidate = Path(directory) / "candidate"
+                shutil.copytree(
+                    ROOT,
+                    candidate,
+                    ignore=shutil.ignore_patterns(".git", "dist", "__pycache__", "*.pyc"),
+                )
+                workflow = candidate / ".github" / "workflows" / "ci.yml"
+                workflow.write_text(
+                    workflow.read_text(encoding="utf-8")
+                    + "\n  invalid-local-action:\n"
+                    + "    runs-on: ubuntu-latest\n"
+                    + "    steps:\n"
+                    + f"      - uses: {reference}\n",
+                    encoding="utf-8",
+                )
+                result = self.run_validator(
+                    "--root", str(candidate), "--config", ".icarus-open-source.example.yml"
+                )
+            self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+            self.assertIn(expected, result.stdout)
+
     def test_ci_fetches_reachable_history_before_claiming_a_history_scan(self):
         source = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("fetch-depth: 0", source)
@@ -103,8 +146,8 @@ class ValidateContractTests(unittest.TestCase):
 
     def test_release_changelog_records_the_current_version_source(self):
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertEqual("1.0.4", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
-        self.assertIn("## [1.0.4] - 2026-08-27", changelog)
+        self.assertEqual("1.0.5", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertIn("## [1.0.5] - 2026-08-28", changelog)
         self.assertIn("## [1.0.3] - 2026-08-26", changelog)
         self.assertIn("## [1.0.2] - 2026-08-26", changelog)
         self.assertNotIn("## [Unreleased]", changelog)
