@@ -26,6 +26,8 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0, reviewed 2026-08-25
         with:
           python-version: '3.12'
+      - name: Fetch every public branch ref for the history boundary
+        run: git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
       - name: Verify immutable SemVer tag is reachable from main
         id: release-metadata
         shell: bash
@@ -51,17 +53,55 @@ jobs:
           version: ${{ steps.release-metadata.outputs.version }}
           repository: ${{ github.repository }}
       - run: python scripts/validate.py
+      - run: python scripts/check_history_boundaries.py
       - run: python -m unittest discover -s scripts -p 'test_*.py'
       - run: python scripts/run_evals.py
       - run: pwsh -NoProfile -File scripts/package.ps1 -Release -Version "${RELEASE_TAG#v}"
       - run: python scripts/scan_public_risks.py --history --include-generated
-      - name: Publish reviewed tag assets
+      - name: Create and verify one exact draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           version="${RELEASE_TAG#v}"
-          gh release create "$RELEASE_TAG" \
-            "dist/icarus-open-source-governance-${version}.zip" \
-            dist/icarus-open-source-governance.skill \
-            dist/SHA256SUMS.txt \
-            --generate-notes
+          assets=(
+            "dist/icarus-open-source-governance-${version}.zip"
+            dist/icarus-open-source-governance.skill
+            dist/SHA256SUMS.txt
+          )
+          export EXPECTED_TAG="$RELEASE_TAG"
+          existing_count="$(
+            gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/releases?per_page=100" |
+              python3 -c 'import json, os, sys; pages = json.load(sys.stdin); print(sum(1 for page in pages for release in page if release.get("tag_name") == os.environ["EXPECTED_TAG"]))'
+          )"
+          if [[ "$existing_count" != "0" ]]; then
+            echo "Refusing to reuse an existing release or draft for $RELEASE_TAG" >&2
+            exit 1
+          fi
+          draft_url="$(gh release create "$RELEASE_TAG" "${assets[@]}" \
+            --verify-tag --draft --generate-notes --title "$RELEASE_TAG")"
+          test -n "$draft_url"
+          actual_asset_lines=""
+          for attempt in 1 2 3 4 5; do
+            if actual_asset_lines="$(
+              gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/releases?per_page=100" |
+                python3 -c 'import json, os, sys; pages = json.load(sys.stdin); matches = [release for page in pages for release in page if release.get("draft") and release.get("tag_name") == os.environ["EXPECTED_TAG"]]; len(matches) == 1 or sys.exit(f"expected one new draft release, found {len(matches)}"); assets = matches[0].get("assets", []); len(assets) == 3 or sys.exit(f"expected three uploaded assets, found {len(assets)}"); print("\n".join(sorted(asset["name"] for asset in assets)))'
+            )"; then
+              break
+            fi
+            if [[ "$attempt" == "5" ]]; then
+              echo "Draft release did not converge to one exact three-asset state" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          mapfile -t actual_assets <<< "$actual_asset_lines"
+          expected_assets=(
+            "SHA256SUMS.txt"
+            "icarus-open-source-governance-${version}.zip"
+            "icarus-open-source-governance.skill"
+          )
+          if ! diff -u <(printf '%s\n' "${expected_assets[@]}") <(printf '%s\n' "${actual_assets[@]}"); then
+            echo "Draft release assets differ from the reviewed package" >&2
+            exit 1
+          fi

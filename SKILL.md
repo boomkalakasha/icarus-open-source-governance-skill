@@ -17,7 +17,10 @@ Before changing anything, record `FACT`, `INFERENCE`, and `NOT_VERIFIED`; curren
 
 1. **Classify** — confirm the project is intended for public release; stop for unknown ownership, privacy, or third-party asset rights.
 2. **Configure** — start with `.icarus-open-source.example.yml`; `brand.mode: none` is the default. `subtle` and `full` are optional project choices, never forced personal attribution. 品牌为可选配置，不是默认归属声明。
-3. **Audit locally** — run `python scripts/validate.py`, then `python scripts/scan_public_risks.py --history`; inspect current tree, reachable history, commit metadata, generated artifacts, and packages separately.
+3. **Audit locally** — self-check this tool with `python scripts/validate.py`;
+   audit a candidate with `python scripts/audit_target.py --root <repository>
+   --policy .icarus-open-source.yml --history`. Inspect current tree, reachable
+   history, commit metadata, generated artifacts, and packages separately.
 4. **Document** — make English/Chinese navigation and behavior agree; add only accurate installation, support, contribution, security, release, and license statements.
 5. **Package and evaluate** — run `python scripts/run_evals.py` and `pwsh -NoProfile -File scripts/package.ps1`; record checksums and what remains `DOCUMENTED_ONLY`.
 6. **Publish only after local gates** — use GitHub Flow, reviewed PRs, immutable SemVer tags, checked CI/CodeQL, and an independently verified release page. A release never proves production deployment.

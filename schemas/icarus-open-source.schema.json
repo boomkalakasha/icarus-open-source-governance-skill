@@ -15,6 +15,20 @@
         "languages": {"type": "array", "minItems": 1, "items": {"enum": ["en", "zh-CN"]}}
       }
     },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiredFiles", "readme", "readmeZh"],
+      "properties": {
+        "requiredFiles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "readme": {"type": "string", "minLength": 1},
+        "readmeZh": {"type": "string", "minLength": 1}
+      }
+    },
     "license": {
       "type": "object",
       "additionalProperties": false,
@@ -64,6 +78,14 @@
       "properties": {
         "requireLocal": {"type": "boolean"},
         "requirePublicHost": {"type": "boolean"}
+      }
+    },
+    "integrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "gitleaks": {"enum": ["disabled", "optional", "required"]},
+        "reuse": {"enum": ["disabled", "optional", "required"]}
       }
     }
   }

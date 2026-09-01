@@ -2,7 +2,7 @@
 
 # Icarus 开源治理
 
-[English](README.md) · [技能说明](SKILL.md) · [配置示例](.icarus-open-source.example.yml) · [证据门禁](references/evidence-gates.md)
+[English](README.md) · [技能说明](SKILL.md) · [配置示例](.icarus-open-source.example.yml) · [审计 Action](actions/audit-target/README.md) · [证据门禁](references/evidence-gates.md)
 
 > **先把风险说清楚，再把项目公开。**
 >
@@ -19,7 +19,7 @@
 未打标签的源码仍是候选；只有复核、标签、CI、资产与 Release 证据完整后，
 才能作为公开版本。
 
-本地脚本只使用 Python 标准库和 PowerShell；第一次审查不需要安装项目专属依赖。
+核心审计只使用 Python 标准库和 PowerShell；第一次做契约与历史审查时，不需要安装项目专属依赖。成熟工具检查单独配置：本项目不会下载 Gitleaks 或 REUSE，也不接受策略文件提供的命令，并会如实报告它们是否缺失。
 
 ## 一眼看懂：它能帮你做什么
 
@@ -27,6 +27,7 @@
 | --- | --- | --- |
 | 判断仓库能否安全公开 | 校验项目契约、隐私、许可证、品牌和发布输入 | 把可审查候选与不应贸然公开的“已就绪”说法分开 |
 | 看清历史会暴露什么 | 扫描可达提交、元数据、生成物和打包内容 | 把来源或隐私的隐患变成可调查的问题清单 |
+| 安全复用成熟安全与许可证检查 | 目标策略要求时调用固定的 Gitleaks 与 REUSE 适配器 | 得到脱敏的 `PASS` / `HOLD` / `HUMAN_REVIEW` 证据行，而不是自造扫描器的承诺 |
 | 让公开文档更有分寸 | 保持中英导航对齐，品牌保持可选 | 文档易读，同时不把个人默认信息伪装成项目必选项 |
 | 组装别人能复核的发布物 | 生成制品、manifest、校验和，并串起 CI/安全门禁 | 给人工审核者具体证据，而不只是一个绿色命令 |
 
@@ -39,7 +40,7 @@
 第一次审查按这个顺序走：
 
 1. 复制配置示例，只替换能够举证的事实。
-2. 先校验契约，再扫描当前文件和可达历史。
+2. 运行目标仓库审计，同时校验契约并扫描当前文件和可达历史。
 3. 逐条阅读发现，明确处理隐私、许可证、双语文档和品牌事项；不要把扫描通过
    当成自动批准。
 4. 运行评测并打包候选，检查 `dist/manifest.json` 和 `SHA256SUMS.txt` 后，
@@ -47,13 +48,14 @@
 
 ```powershell
 Copy-Item .icarus-open-source.example.yml .icarus-open-source.yml
-python scripts/validate.py --config .icarus-open-source.yml
-python scripts/scan_public_risks.py --history
+python scripts/audit_target.py --root . --policy .icarus-open-source.yml --history
 python scripts/run_evals.py
 pwsh -NoProfile -File scripts/package.ps1
 ```
 
 这些命令只验证本地候选，不会创建仓库、推送分支、发布标签、修改 GitHub 设置，也不证明生产就绪。
+
+示例策略把 Gitleaks 和 REUSE 设为 `required`。在执行可进入发布审查的审计前，需由本机或 CI Runner 先提供这两个工具；审计本身不会安装它们。必需工具缺失为 `HOLD`，可选工具缺失为 `HUMAN_REVIEW`；旧策略没有 `integrations` 段仍可兼容，并会显示 `NOT_CONFIGURED`，不能据此说外部工具已经执行。
 
 扫描发现问题后先分类再改：当前树发现通常需要修改源码；可达历史发现可能需要删除内容、
 评估历史重写，或记录明确例外；元数据发现需要复核 author/committer。处理决定后重新运行
@@ -76,7 +78,7 @@ pwsh -NoProfile -File scripts/package.ps1
 
 ## 覆盖范围
 
-- 为项目、许可证决策、隐私、品牌、Git、发布和证据门禁提供小型 `.icarus-open-source.yml` 契约。
+- 为项目、许可证决策、隐私、品牌、Git、发布、证据门禁和可选成熟工具集成提供小型 `.icarus-open-source.yml` 契约。
 - 把当前树、可达历史、提交元数据、包和生成物风险检查分为独立证据流。
 - 提供中英双语公共文档与社区模板，并明确支持、安全和发布边界。
 - 品牌是可选的：附带的 BOOMKALAKASHA 套件仅为示例配置，不是项目默认项，也不代表项目归属。
@@ -96,20 +98,36 @@ pwsh -NoProfile -File scripts/package.ps1
 
 ## 配置项目
 
-复制示例到候选仓库，只替换能够举证的事实：
+复制示例到候选仓库，只替换能够举证的事实。从 Governance 工具检出目录
+执行时，用 `--root` 指向候选仓库；policy 路径必须位于目标仓库内：
 
 ```powershell
 Copy-Item .icarus-open-source.example.yml .icarus-open-source.yml
-python scripts/validate.py --config .icarus-open-source.yml
+python scripts/audit_target.py --root . --policy .icarus-open-source.yml --history
 ```
+
+`python scripts/validate.py` 的职责不同：它只自检 Governance 工具包本身，
+不会把任意目标仓库误当成 Governance 源码包。
+
+可选的 `target` 段用于自定义必备文件和中英文 README 路径。1.0.x 已有策略
+不增加该段也继续有效，并采用 `.icarus-open-source.example.yml` 所示的默认值。
+
+`integrations` 只接受 `gitleaks` 和 `reuse`，每项取值为 `disabled`、`optional` 或 `required`。策略文件不能提供可执行路径、shell 片段或任意参数。`required` 遇到工具缺失、超时或非零退出时失败关闭；`optional` 保留同样的证据，但把决定交给 `HUMAN_REVIEW`。许可证配置只是维护者输入，不是法律批准；因此 `review-required` 也会产生 `HUMAN_REVIEW`。
 
 `brand.mode` 默认是 `none`。只有项目所有者明确选择可替换的品牌配置时，才使用 `subtle` 或 `full`；详见[品牌说明](references/branding.md)。
 
 ## 本地证据与打包
 
-`scripts/scan_public_risks.py --history` 会扫描本地可达提交以及 author/committer 元数据，并对未变化的文本 blob 去重，同时保留首次发现位置；它是确定性的风险标记扫描，不是完整的秘密或权利审计。可通过 `--pattern` 加入项目特定规则，或通过 `--config .icarus-open-source.yml` 读取 `privacy.forbiddenPatterns` 和历史扫描偏好，并逐条调查发现。
+`scripts/audit_target.py --root <仓库> --policy .icarus-open-source.yml --history`
+是面向用户的目标审计入口：它检查目标文档，并复用风险扫描器检查当前树、可达提交
+和 author/committer 元数据。输出只包含位置和规则，不回显匹配到的凭据值。
+`scan_public_risks.py` 仍可用于更聚焦的底层扫描。
+每个工具行会保留 `NOT_CONFIGURED`、`PASS`、`HOLD` 或 `HUMAN_REVIEW`，不会回显工具原始输出、匹配到的秘密或临时报告路径。
 
 `scripts/package.ps1` 只暂存一次源树，再在 `dist/` 生成 `.skill`、`.zip`、`manifest.json` 和 `SHA256SUMS.txt`。manifest 会标明源树为 `clean` 或 `dirty`；只有干净的确切标签包才能进入发布审查。公开前仍须基于确切已审核标签重新核验发布资产。
+
+Release workflow 会拒绝复用同 tag 的既有 Release 或草稿，只创建一个新草稿并核验
+完整预期资产集合。是否公开该草稿仍由维护者另行决定。
 
 `VERSION` 声明本地包版本；该版本是否已经公开发布仍以 GitHub Release 为准，未打 tag 的候选不等于公开发布。
 

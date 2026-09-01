@@ -34,7 +34,7 @@
 
 ### Task 2: AI-first Vibe Coding v1.1.0
 
-**Worktree:** `C:/BO/IdeaProjects/worktrees/ai-first-v1.1-productization`
+**Worktree:** `<workspace>/worktrees/ai-first-v1.1-productization`
 
 **Files:**
 - Modify: `README.md`, `README.zh-CN.md`, `CHANGELOG.md`, `SKILL.md`, `compatibility.md`, `evals/README.md`
@@ -71,7 +71,7 @@ Tests supply a deterministic fake commit. Production packaging obtains the real 
 
 ### Task 3: Icarus Spring Scaffold v1.1.0
 
-**Worktree:** `C:/BO/IdeaProjects/worktrees/icarus-v1.1-productization`
+**Worktree:** `<workspace>/worktrees/icarus-v1.1-productization`
 
 **Files:**
 - Modify: `icarus-scaffold-cli/src/main/java/io/github/boomkalakasha/icarus/scaffold/cli/ScaffoldCli.java`
@@ -115,7 +115,7 @@ final class SafeOutputFile {
 
 ### Task 4: Icarus Open-source Governance Skill v1.0.0
 
-**Repository:** `C:/BO/IdeaProjects/open-source/icarus-open-source-governance-skill`
+**Repository:** `<workspace>/open-source/icarus-open-source-governance-skill`
 
 **Files:**
 - Create: `SKILL.md`, `README.md`, `README.zh-CN.md`, `LICENSE`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `CODE_OF_CONDUCT.md`, `compatibility.md`

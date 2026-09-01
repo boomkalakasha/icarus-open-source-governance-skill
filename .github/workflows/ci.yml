@@ -18,8 +18,17 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0, reviewed 2026-08-25
         with:
           python-version: '3.12'
+      - name: Fetch every public branch ref for the history boundary
+        run: git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
       - run: python scripts/validate.py
+      - run: python scripts/check_history_boundaries.py
       - run: python -m unittest discover -s scripts -p 'test_*.py'
+      - name: Exercise the target-audit action on this repository
+        uses: ./actions/audit-target
+        with:
+          root: .
+          policy: .github/ci/self-audit-policy.yml
+          history: 'true'
       - run: python scripts/run_evals.py
       - run: pwsh -NoProfile -File scripts/package.ps1
       - run: python scripts/scan_public_risks.py --history --include-generated
