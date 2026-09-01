@@ -6,7 +6,7 @@ import argparse
 import json
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 
@@ -33,11 +33,16 @@ REQUIRED_FILES = (
     "references/github-delivery.md",
     "references/evidence-gates.md",
     "references/release-documentation-sync.md",
+    "references/legacy-public-history.md",
     "scripts/scan_public_risks.py",
+    "scripts/audit_target.py",
+    "scripts/external_tools.py",
+    "scripts/check_history_boundaries.py",
     "scripts/check_release_docs.py",
     "scripts/package.ps1",
     "scripts/run_evals.py",
     "actions/release-doc-sync/action.yml",
+    "actions/audit-target/action.yml",
     "evals/evals.json",
     "evals/trigger-evals.json",
     "templates/README.md",
@@ -54,6 +59,18 @@ REQUIRED_FILES = (
     ".github/workflows/release.yml",
 )
 REQUIRED_SECTIONS = {"project", "license", "privacy", "brand", "git", "release", "evidence"}
+ALLOWED_CONFIG_KEYS = {
+    "<root>": {"schemaVersion", *REQUIRED_SECTIONS, "target", "integrations"},
+    "project": {"name", "languages"},
+    "target": {"requiredFiles", "readme", "readmeZh"},
+    "license": {"decision"},
+    "privacy": {"scanReachableHistory", "forbiddenPatterns"},
+    "brand": {"mode", "profile"},
+    "git": {"flow", "commits"},
+    "release": {"versioning", "immutable"},
+    "evidence": {"requireLocal", "requirePublicHost"},
+    "integrations": {"gitleaks", "reuse"},
+}
 TEXT_SUFFIXES = {".md", ".py", ".json", ".yml", ".yaml", ".ps1", ".svg", ".html"}
 MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
 STABLE_SEMVER = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
@@ -105,6 +122,9 @@ def parse_minimal_yaml(path: Path) -> dict[str, Any]:
 
 def validate_config(config: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    unknown = set(config) - ALLOWED_CONFIG_KEYS["<root>"]
+    if unknown:
+        errors.append(f"unknown top-level keys: {', '.join(sorted(unknown))}")
     if config.get("schemaVersion") != 1:
         errors.append("schemaVersion must be 1")
     missing = REQUIRED_SECTIONS - set(config)
@@ -116,12 +136,32 @@ def validate_config(config: dict[str, Any]) -> list[str]:
             errors.append(f"{section} must be a mapping")
     if errors:
         return errors
+    for section in REQUIRED_SECTIONS:
+        unknown = set(config[section]) - ALLOWED_CONFIG_KEYS[section]
+        if unknown:
+            errors.append(
+                f"unknown {section} keys: {', '.join(sorted(unknown))}"
+            )
     project = config["project"]
     if not isinstance(project.get("name"), str) or not project["name"].strip():
         errors.append("project.name must be a non-empty string")
     languages = project.get("languages")
     if not isinstance(languages, list) or not languages or any(item not in {"en", "zh-CN"} for item in languages):
         errors.append("project.languages must be a non-empty list of en and/or zh-CN")
+    target = config.get("target")
+    if target is not None:
+        if not isinstance(target, dict):
+            errors.append("target must be a mapping")
+        else:
+            unknown = set(target) - ALLOWED_CONFIG_KEYS["target"]
+            if unknown:
+                errors.append(f"unknown target keys: {', '.join(sorted(unknown))}")
+            required_files = target.get("requiredFiles")
+            if not isinstance(required_files, list) or not required_files or not all(isinstance(item, str) for item in required_files):
+                errors.append("target.requiredFiles must be a non-empty list of strings")
+            for key in ("readme", "readmeZh"):
+                if not isinstance(target.get(key), str) or not target[key].strip():
+                    errors.append(f"target.{key} must be a non-empty string")
     if config["license"].get("decision") not in {"review-required", "approved", "not-applicable"}:
         errors.append("license.decision is invalid")
     privacy = config["privacy"]
@@ -143,6 +183,19 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     evidence = config["evidence"]
     if not isinstance(evidence.get("requireLocal"), bool) or not isinstance(evidence.get("requirePublicHost"), bool):
         errors.append("evidence gates must be booleans")
+    integrations = config.get("integrations")
+    if integrations is not None:
+        if not isinstance(integrations, dict):
+            errors.append("integrations must be an object")
+        else:
+            unknown_integration_keys = set(integrations) - ALLOWED_CONFIG_KEYS["integrations"]
+            if unknown_integration_keys:
+                errors.append(
+                    "unknown integrations keys: " + ", ".join(sorted(unknown_integration_keys))
+                )
+            for tool in ALLOWED_CONFIG_KEYS["integrations"]:
+                if tool in integrations and integrations[tool] not in {"disabled", "optional", "required"}:
+                    errors.append(f"integrations.{tool} must be disabled, optional, or required")
     return errors
 
 
@@ -152,6 +205,52 @@ def iter_text_files(root: Path):
             continue
         if path.suffix.lower() in TEXT_SUFFIXES or path.name in {"LICENSE", "SKILL.md"}:
             yield path
+
+
+def safe_relative_path(value: object) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    if "\\" in value or ":" in value or any(ord(character) < 32 for character in value):
+        return False
+    posix = PurePosixPath(value)
+    windows = PureWindowsPath(value)
+    return (
+        not posix.is_absolute()
+        and ".." not in posix.parts
+        and not windows.is_absolute()
+        and not windows.drive
+        and not windows.root
+    )
+
+
+def resolve_inside(
+    root: Path,
+    base: Path,
+    value: object,
+    *,
+    allow_parent_segments: bool = False,
+) -> Path | None:
+    if not isinstance(value, str) or not value:
+        return None
+    if "\\" in value or ":" in value or any(ord(character) < 32 for character in value):
+        return None
+    posix = PurePosixPath(value)
+    windows = PureWindowsPath(value)
+    if (
+        posix.is_absolute()
+        or windows.is_absolute()
+        or windows.drive
+        or windows.root
+        or (not allow_parent_segments and ".." in posix.parts)
+    ):
+        return None
+    root = root.resolve()
+    candidate = (base / str(value)).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        return None
+    return candidate
 
 
 def validate_links(root: Path) -> list[str]:
@@ -165,7 +264,16 @@ def validate_links(root: Path) -> list[str]:
             if not target or target.startswith(("#", "http://", "https://", "mailto:")):
                 continue
             local = target.split("#", 1)[0]
-            if local and not (path.parent / local).resolve().exists():
+            if not local:
+                continue
+            # Markdown links may legitimately walk up from references/ or docs/.
+            # The resolved-path containment check still rejects an escape from root.
+            resolved = resolve_inside(
+                root, path.parent, local, allow_parent_segments=True
+            )
+            if resolved is None:
+                errors.append(f"{path.relative_to(root)}: unsafe relative link {target}")
+            elif not resolved.exists():
                 errors.append(f"{path.relative_to(root)}: broken relative link {target}")
     return errors
 
@@ -183,6 +291,9 @@ def validate_repository(root: Path, config_path: Path) -> list[str]:
     for path in iter_text_files(root):
         if path.read_bytes().startswith(b"\xef\xbb\xbf"):
             errors.append(f"{path.relative_to(root)}: UTF-8 BOM is not allowed")
+        text = path.read_text(encoding="utf-8")
+        if re.search(r"(?i)[A-Z]:[\\/]+(?:Users[\\/]+[^<>/\\]+|BO[\\/]+IdeaProjects)(?:[\\/]|$)", text):
+            errors.append(f"{path.relative_to(root)}: machine-local absolute path is forbidden")
     errors.extend(validate_links(root))
     readme = (root / "README.md").read_text(encoding="utf-8")
     chinese_readme = (root / "README.zh-CN.md").read_text(encoding="utf-8")

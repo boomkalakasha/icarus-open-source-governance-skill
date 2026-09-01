@@ -1,0 +1,31 @@
+name: Icarus target repository audit
+description: Audit one checked-out public candidate with its in-repository Icarus policy; required Gitleaks/REUSE tools must already exist on the runner.
+inputs:
+  root:
+    description: Target repository path relative to the job workspace
+    required: false
+    default: .
+  policy:
+    description: Policy path inside the target repository
+    required: false
+    default: .icarus-open-source.yml
+  history:
+    description: Also scan reachable Git history
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Run target audit
+      shell: bash
+      env:
+        ICARUS_TARGET_ROOT: ${{ inputs.root }}
+        ICARUS_TARGET_POLICY: ${{ inputs.policy }}
+        ICARUS_TARGET_HISTORY: ${{ inputs.history }}
+      run: |
+        set -euo pipefail
+        args=(--root "$ICARUS_TARGET_ROOT" --policy "$ICARUS_TARGET_POLICY")
+        if [[ "$ICARUS_TARGET_HISTORY" == "true" ]]; then
+          args+=(--history)
+        fi
+        python "$GITHUB_ACTION_PATH/../../scripts/audit_target.py" "${args[@]}"

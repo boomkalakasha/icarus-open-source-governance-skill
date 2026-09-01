@@ -18,5 +18,30 @@ Use GitHub Flow on a short feature branch. Keep `main` stable, use truthful Conv
 
 ## Validation
 
-Before commit, run the repository validator, script tests, Markdown/link checks, package build, public-content scan, and documented eval checks. Do not claim legal approval: the Skill supplies engineering governance and points maintainers to authoritative resources.
+Before a pull request, run the complete local gate from the repository root:
+
+```text
+python scripts/validate.py
+python scripts/check_history_boundaries.py
+python -m unittest discover -s scripts -p "test_*.py"
+python scripts/run_evals.py
+pwsh -NoProfile -File scripts/package.ps1
+python scripts/scan_public_risks.py --history --include-generated
+python scripts/audit_target.py --root . --policy .github/ci/self-audit-policy.yml --history
+```
+
+The last command exercises this repository's passable CI self-audit policy;
+other repositories use their own in-target `.icarus-open-source.yml` policy.
+Do not claim legal approval: the Skill supplies engineering governance and
+points maintainers to authoritative resources.
+
+## Project/module AI guidance coverage
+
+This root `AGENTS.md` is the project-level guide for the public Skill. The
+repository has no independently released source modules with distinct commands
+or privileged boundaries, so the current module-level status is `NOT_NEEDED`.
+Do not add duplicate per-folder guidance. Reassess when a subarea acquires a
+separate build/run command, external or data/security contract, release or
+ownership lifecycle, or dependency direction that cannot be safely described
+at root scope. Keep a necessary nearest-scope guide brief and linked back here.
 

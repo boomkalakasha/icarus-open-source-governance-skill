@@ -29,6 +29,13 @@ class ValidateContractTests(unittest.TestCase):
                 set(schema["required"])
             )
         )
+        self.assertNotIn("target", schema["required"])
+        self.assertIn("target", schema["properties"])
+        self.assertIn("integrations", schema["properties"])
+        self.assertEqual(
+            ["disabled", "optional", "required"],
+            schema["properties"]["integrations"]["properties"]["gitleaks"]["enum"],
+        )
         self.assertEqual(["none", "subtle", "full"], schema["properties"]["brand"]["properties"]["mode"]["enum"])
 
     def test_example_config_is_generic_and_brand_disabled(self):
@@ -39,12 +46,53 @@ class ValidateContractTests(unittest.TestCase):
         self.assertIn("mode: none", source)
         self.assertIn("profile: null", source)
         self.assertNotIn("BOOMKALAKASHA", source)
+        self.assertIn("gitleaks: required", source)
+        self.assertIn("reuse: required", source)
+
+    def test_minimal_validator_rejects_keys_forbidden_by_the_json_schema(self):
+        source = (ROOT / ".icarus-open-source.example.yml").read_text(encoding="utf-8")
+        for replacement, expected in (
+            ("schemaVersion: 1\nsurprise: true", "unknown top-level keys: surprise"),
+            ("project:\n  surprise: true", "unknown project keys: surprise"),
+        ):
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as directory:
+                candidate = Path(directory) / "policy.yml"
+                candidate.write_text(source.replace("schemaVersion: 1", replacement), encoding="utf-8")
+                if "project" in expected:
+                    candidate.write_text(source.replace("project:", replacement), encoding="utf-8")
+                result = self.run_validator("--config", str(candidate))
+            self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+            self.assertIn(expected, result.stdout)
 
     def test_repository_validator_checks_bilingual_navigation_and_optional_branding(self):
         result = self.run_validator()
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         self.assertIn("PASS: bilingual navigation", result.stdout)
         self.assertIn("PASS: optional brand configuration", result.stdout)
+
+    def test_repository_source_has_no_machine_local_absolute_paths(self):
+        for path in validate.iter_text_files(ROOT):
+            source = path.read_text(encoding="utf-8")
+            self.assertNotRegex(
+                source,
+                r"(?i)[A-Z]:[\\/]+(?:Users[\\/]+[^<>/\\]+|BO[\\/]+IdeaProjects)(?:[\\/]|$)",
+                str(path),
+            )
+        note = (ROOT / "references" / "legacy-public-history.md").read_text(encoding="utf-8")
+        self.assertIn("accepted legacy disclosure", note)
+
+    def test_validator_rejects_a_machine_local_path_in_current_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            candidate = Path(directory) / "candidate"
+            shutil.copytree(ROOT, candidate, ignore=shutil.ignore_patterns(".git", "dist", "__pycache__", "*.pyc"))
+            marker = "C:" + "/Users/example/private.md"
+            (candidate / "README.md").write_text(
+                (candidate / "README.md").read_text(encoding="utf-8") + f"\n`{marker}`\n",
+                encoding="utf-8",
+            )
+            result = self.run_validator("--root", str(candidate), "--config", ".icarus-open-source.example.yml")
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("machine-local absolute path is forbidden", result.stdout)
 
     def test_templates_never_force_the_example_personal_brand(self):
         for path in (ROOT / "templates").glob("*.md"):
@@ -62,6 +110,7 @@ class ValidateContractTests(unittest.TestCase):
                 ".github/workflows/ci.yml",
                 ".github/workflows/codeql.yml",
                 ".github/workflows/release.yml",
+                "scripts/external_tools.py",
             }.issubset(required)
         )
 
@@ -127,6 +176,50 @@ class ValidateContractTests(unittest.TestCase):
         source = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("fetch-depth: 0", source)
         self.assertIn("scan_public_risks.py --history", source)
+        self.assertIn("check_history_boundaries.py", source)
+
+    def test_ci_exercises_the_action_with_a_passable_self_audit_policy(self):
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        policy = ".github/ci/self-audit-policy.yml"
+        self.assertIn(f"policy: {policy}", workflow)
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "audit_target.py"),
+                "--root",
+                ".",
+                "--policy",
+                policy,
+                "--history",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("PASS: target audit", result.stdout)
+
+    def test_legacy_public_history_is_explicit_and_new_machine_paths_are_gated(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check_history_boundaries.py")],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("ACCEPTED_LEGACY", result.stdout)
+        gate = (ROOT / "scripts" / "check_history_boundaries.py").read_text(encoding="utf-8")
+        self.assertIn("--show-toplevel", gate)
+        self.assertIn('"--all"', gate)
+        self.assertIn("--regexp-ignore-case", gate)
+        self.assertIn("refs/remotes/origin", gate)
+        for workflow_name in ("ci.yml", "release.yml"):
+            workflow = (ROOT / ".github" / "workflows" / workflow_name).read_text(encoding="utf-8")
+            self.assertIn("+refs/heads/*:refs/remotes/origin/*", workflow)
+            self.assertIn("check_history_boundaries.py", workflow)
 
     def test_release_workflow_requires_a_tag_commit_reachable_from_main(self):
         source = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
@@ -146,11 +239,82 @@ class ValidateContractTests(unittest.TestCase):
 
     def test_release_changelog_records_the_current_version_source(self):
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertEqual("1.0.5", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertEqual("1.1.0", (ROOT / "VERSION").read_text(encoding="utf-8").strip())
+        self.assertIn("## [1.1.0] - Unreleased", changelog)
         self.assertIn("## [1.0.5] - 2026-08-28", changelog)
         self.assertIn("## [1.0.3] - 2026-08-26", changelog)
         self.assertIn("## [1.0.2] - 2026-08-26", changelog)
         self.assertNotIn("## [Unreleased]", changelog)
+
+    def test_verified_public_release_history_is_not_labeled_unpublished(self):
+        changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        for version, next_version in (("1.0.5", "1.0.4"), ("1.0.4", "1.0.3")):
+            section = changelog.split(f"## [{version}]", 1)[1].split(f"## [{next_version}]", 1)[0]
+            self.assertIn("Public release verified", section)
+            self.assertNotIn("not public", section)
+
+    def test_release_workflow_creates_one_exact_draft_and_never_reuses_it(self):
+        workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+        self.assertIn("gh release create", workflow)
+        self.assertIn("--draft", workflow)
+        self.assertIn("--verify-tag", workflow)
+        self.assertIn("Refusing to reuse", workflow)
+        self.assertIn("expected_assets", workflow)
+        self.assertIn("expected three uploaded assets", workflow)
+        self.assertIn("for attempt in 1 2 3 4 5", workflow)
+        self.assertNotIn("gh release upload", workflow)
+        self.assertNotIn("--clobber", workflow)
+
+    def test_release_draft_shell_block_has_valid_bash_syntax(self):
+        if shutil.which("bash") is None:
+            self.skipTest("bash is unavailable on this validation host")
+        workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+        step = workflow.split("      - name: Create and verify one exact draft release", 1)[1]
+        block = step.split("        run: |\n", 1)[1]
+        script = "\n".join(
+            line[10:] if line.startswith("          ") else line
+            for line in block.splitlines()
+        )
+        result = subprocess.run(
+            ["bash", "-n"],
+            input=script.encode("utf-8"),
+            capture_output=True,
+            check=False,
+        )
+        output = (result.stdout + result.stderr).decode("utf-8", errors="replace")
+        self.assertEqual(0, result.returncode, output)
+
+    def test_readmes_use_the_target_audit_entrypoint(self):
+        english = (ROOT / "README.md").read_text(encoding="utf-8")
+        chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+        for source in (english, chinese):
+            self.assertIn("scripts/audit_target.py --root", source)
+            self.assertIn("--policy .icarus-open-source.yml", source)
+            self.assertIn("scripts/validate.py", source)
+
+    def test_target_audit_action_has_a_reusable_documented_entrypoint(self):
+        action_readme = ROOT / "actions" / "audit-target" / "README.md"
+        self.assertTrue(action_readme.is_file(), "target-audit Action usage document must exist")
+        source = action_readme.read_text(encoding="utf-8")
+        self.assertIn("uses: boomkalakasha/icarus-open-source-governance-skill/actions/audit-target@", source)
+        self.assertIn("Gitleaks and REUSE", source)
+        self.assertIn("not legal approval", source)
+
+        for name in ("README.md", "README.zh-CN.md"):
+            self.assertIn("actions/audit-target/README.md", (ROOT / name).read_text(encoding="utf-8"))
+
+    def test_root_agent_guide_names_the_complete_gate_and_guidance_decision(self):
+        guide = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        for marker in (
+            "scripts/validate.py",
+            "scripts/check_history_boundaries.py",
+            "unittest discover",
+            "scripts/run_evals.py",
+            "scripts/audit_target.py",
+            "Project/module AI guidance coverage",
+            "NOT_NEEDED",
+        ):
+            self.assertIn(marker, guide, marker)
 
     def test_readmes_lead_with_bilingual_value_proposition_and_companions(self):
         english = (ROOT / "README.md").read_text(encoding="utf-8")

@@ -2,10 +2,36 @@
 
 All notable changes are documented here. Releases use immutable SemVer tags after their local and remote evidence gates are satisfied.
 
+## [1.1.0] - Unreleased
+
+### Added
+
+- Add a distinct target-repository audit command and reusable composite action.
+- Validate target-required files, bilingual navigation, current tree and
+  optional reachable history without requiring the target to look like this
+  Governance package.
+- Keep 1.0.x policy files compatible by applying documented target defaults
+  when the new optional `target` section is absent.
+- Redact machine-local paths from current public planning sources, record the
+  already-published low-sensitivity history without rewriting tags, and reject
+  future unrecorded history occurrences with a deterministic boundary gate.
+- Add fixed Gitleaks and REUSE adapters with no policy-supplied executable,
+  shell, or argument surface. Required tools fail closed; optional missing
+  tools and `review-required` license decisions are explicit `HUMAN_REVIEW`.
+
+### Changed
+
+- Make package self-validation explicit and keep target auditing separate.
+- Exercise the reusable target-audit Action with an explicit passable CI
+  self-policy, while retaining the strict example policy for real release
+  candidates; document how consumers can use the Action without treating its
+  result as legal or publication approval.
+- Create exactly one draft GitHub Release, reject pre-existing release state,
+  and verify the exact asset set; publication remains separately authorized.
+
 ## [1.0.5] - 2026-08-28
 
-> Candidate notes for the next release; this version is not public until its
-> tag, CI, assets, and release gates are independently verified.
+> Public release verified for `v1.0.5` while preparing the 1.1.0 candidate.
 
 ### Added
 
@@ -25,8 +51,7 @@ All notable changes are documented here. Releases use immutable SemVer tags afte
 
 ## [1.0.4] - 2026-08-27
 
-> Candidate notes for the next release; this version is not public until its
-> tag, CI, assets, and release gates are independently verified.
+> Public release verified for `v1.0.4` while preparing the 1.1.0 candidate.
 
 ### Changed
 

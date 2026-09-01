@@ -2,7 +2,7 @@
 
 # Icarus Open-source Governance
 
-[简体中文](README.zh-CN.md) · [Skill](SKILL.md) · [Configuration](.icarus-open-source.example.yml) · [Evidence gates](references/evidence-gates.md)
+[简体中文](README.zh-CN.md) · [Skill](SKILL.md) · [Configuration](.icarus-open-source.example.yml) · [Audit Action](actions/audit-target/README.md) · [Evidence gates](references/evidence-gates.md)
 
 > **先把风险说清楚，再把项目公开。**
 >
@@ -19,7 +19,7 @@ and the [complete release history](https://github.com/boomkalakasha/icarus-open-
 An untagged source tree remains a candidate until its review, tag, CI, assets,
 and Release evidence are complete.
 
-The local scripts use Python's standard library and PowerShell; no project-specific package installation is required for this first review path.
+The core audit uses Python's standard library and PowerShell; no project-specific package installation is required for the first contract and history review. Mature-tool checks are configured separately: this project never downloads Gitleaks or REUSE, never accepts a policy-supplied command, and reports their absence honestly.
 
 ## At a glance
 
@@ -27,6 +27,7 @@ The local scripts use Python's standard library and PowerShell; no project-speci
 | --- | --- | --- |
 | Decide whether a repository is safe to publish | Validate the project contract, privacy, license, brand and release inputs | Separate a reviewable candidate from an unsafe “ready” claim |
 | Understand what history exposes | Scan reachable commits, metadata, generated files and package contents | Turn hidden provenance or privacy surprises into findings to investigate |
+| Reuse mature security and license checks safely | Call fixed Gitleaks and REUSE adapters when the target policy requires them | A redacted `PASS` / `HOLD` / `HUMAN_REVIEW` evidence row instead of a homemade scanner claim |
 | Make public documentation feel intentional | Keep Chinese and English navigation aligned and make branding optional | Publish docs that are readable without making personal defaults look mandatory |
 | Assemble a release that others can inspect | Build an evidence bundle with package, manifest, checksums and CI/security gates | Give a human reviewer concrete release evidence, not a green command alone |
 
@@ -40,7 +41,8 @@ organizes evidence; it does not make legal, ownership or production decisions.
 For a first review, follow this order:
 
 1. Copy the example configuration and replace only facts you can support.
-2. Validate the contract, then scan current files and reachable history.
+2. Run the target audit, which validates the contract and scans current files
+   plus reachable history.
 3. Read every finding and decide privacy, license, bilingual-doc and branding
    actions instead of treating a passing scan as approval.
 4. Run evaluations and package the candidate; review `dist/manifest.json` and
@@ -48,13 +50,19 @@ For a first review, follow this order:
 
 ```powershell
 Copy-Item .icarus-open-source.example.yml .icarus-open-source.yml
-python scripts/validate.py --config .icarus-open-source.yml
-python scripts/scan_public_risks.py --history
+python scripts/audit_target.py --root . --policy .icarus-open-source.yml --history
 python scripts/run_evals.py
 pwsh -NoProfile -File scripts/package.ps1
 ```
 
 These commands validate a local candidate. They do not create a repository, push a branch, publish a tag, change GitHub settings, or prove production readiness.
+
+The example policy marks Gitleaks and REUSE as `required`. Supply those tools
+in the local or CI runner before calling a release-ready audit; the audit does
+not install them. A missing required tool is `HOLD`; an `optional` missing tool
+is `HUMAN_REVIEW`; an absent `integrations` section remains compatible with
+older policies and is reported as `NOT_CONFIGURED`, not as proof that those
+external checks ran.
 
 When a scan reports a finding, classify it before editing: current-tree findings
 usually need a source change; reachable-history findings may require a removal,
@@ -81,7 +89,7 @@ never upgrades the public-host evidence.
 
 ## What it covers
 
-- A small `.icarus-open-source.yml` contract for project, license decision, privacy, brand, Git, release, and evidence gates.
+- A small `.icarus-open-source.yml` contract for project, license decision, privacy, brand, Git, release, evidence gates, and optional mature-tool integrations.
 - Current-tree, reachable-history, commit-metadata, package, and generated-artifact risk checks as separate evidence streams.
 - Bilingual public documentation and community templates with truthful support, security, and release boundaries.
 - Optional branding: the bundled BOOMKALAKASHA kit is an example profile, not a project default or ownership claim.
@@ -101,20 +109,47 @@ never upgrades the public-host evidence.
 
 ## Configure a project
 
-Copy the example to the candidate repository and replace only facts you can support:
+Copy the example to the candidate repository and replace only facts you can
+support. From a Governance tool checkout, point `--root` at that candidate;
+the policy path is resolved inside the target:
 
 ```powershell
 Copy-Item .icarus-open-source.example.yml .icarus-open-source.yml
-python scripts/validate.py --config .icarus-open-source.yml
+python scripts/audit_target.py --root . --policy .icarus-open-source.yml --history
 ```
+
+`python scripts/validate.py` is intentionally different: it self-validates
+this Governance package and does not audit an arbitrary target.
+
+The optional `target` section customizes required files and bilingual README
+paths. Policies created with 1.0.x remain valid without it and use the defaults
+shown in `.icarus-open-source.example.yml`.
+
+`integrations` accepts only `gitleaks` and `reuse`; each is `disabled`,
+`optional`, or `required`. The policy never supplies executable paths, shell
+snippets, or arbitrary arguments. `required` fails closed on a missing,
+timed-out, or nonzero tool; `optional` preserves the same evidence but routes
+the decision to `HUMAN_REVIEW`. A configured license decision is a maintainer
+input, not legal approval; `review-required` therefore also produces
+`HUMAN_REVIEW`.
 
 `brand.mode` defaults to `none`. Use `subtle` or `full` only when the project owner intentionally chooses a replaceable brand profile. See [branding guidance](references/branding.md).
 
 ## Local evidence and package
 
-`scripts/scan_public_risks.py --history` scans local reachable commits and author/committer metadata, de-duplicating unchanged text blobs while retaining a first-seen finding location. It is a deterministic marker scan, not a complete secret or rights assessment. Add project-specific patterns with `--pattern` or load `privacy.forbiddenPatterns` and its history preference with `--config .icarus-open-source.yml`; investigate every finding.
+`scripts/audit_target.py --root <repository> --policy .icarus-open-source.yml --history`
+is the user-facing target audit. It validates target documents and reuses the
+risk scanner for current files, reachable commits and author/committer metadata.
+It reports locations and rules without echoing matched credential values. The
+lower-level `scan_public_risks.py` remains available for focused scans.
+Per-tool rows preserve `NOT_CONFIGURED`, `PASS`, `HOLD`, or `HUMAN_REVIEW` and
+never echo a tool's raw output, matched secret, or temporary report path.
 
 `scripts/package.ps1` stages the same source tree once, then creates `.skill`, `.zip`, `manifest.json`, and `SHA256SUMS.txt` under `dist/`. The manifest marks the source tree `clean` or `dirty`; only a clean exact-tag package is eligible for release review. Verify release assets again from the exact reviewed tag before publishing.
+
+The release workflow refuses to reuse an existing release or draft for the
+tag, creates one new draft, and verifies its complete expected asset set.
+Publishing that draft remains a separate maintainer decision.
 
 `VERSION` declares the local package version. GitHub Releases remain the source of truth for whether that version has been publicly published; an untagged candidate is not a public release.
 

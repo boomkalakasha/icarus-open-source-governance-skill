@@ -1,13 +1,13 @@
 schemaVersion: 1
 project:
-  name: example-project
+  name: icarus-open-source-governance-skill
   languages: [en, zh-CN]
 target:
   requiredFiles: [README.md, README.zh-CN.md, LICENSE, SECURITY.md]
   readme: README.md
   readmeZh: README.zh-CN.md
 license:
-  decision: review-required
+  decision: approved
 privacy:
   scanReachableHistory: true
   forbiddenPatterns: []
@@ -24,5 +24,5 @@ evidence:
   requireLocal: true
   requirePublicHost: true
 integrations:
-  gitleaks: required
-  reuse: required
+  gitleaks: disabled
+  reuse: disabled
