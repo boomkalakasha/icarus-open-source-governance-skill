@@ -101,16 +101,19 @@ class TargetAuditTests(unittest.TestCase):
         self.assertIn("bilingual-navigation", result.stdout)
 
     def test_current_tree_secret_is_reported_without_echoing_value_in_json(self):
-        secret_value = "abc" + "defghijklmnop"
+        fixture_value = "a" * 13
+        assignment_name = "".join(("to", "ken"))
         with tempfile.TemporaryDirectory() as directory:
             target = self.make_target(Path(directory))
-            (target / "config.txt").write_text(f"to{'ken'}: {secret_value}\n", encoding="utf-8")
+            (target / "config.txt").write_text(
+                f"{assignment_name}: {fixture_value}\n", encoding="utf-8"
+            )
             result = self.run_audit(target, "--format", "json")
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("HOLD", payload["status"])
         self.assertTrue(any(item["rule"] == "generic-secret-assignment" for item in payload["findings"]))
-        self.assertNotIn(secret_value, result.stdout)
+        self.assertNotIn(fixture_value, result.stdout)
 
     def test_history_secret_is_detected_when_requested(self):
         with tempfile.TemporaryDirectory() as directory:
