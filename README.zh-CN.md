@@ -12,6 +12,10 @@
 
 把隐私、来源、文档、许可证和发布证据串成一条可执行、可复核的路径，让内部仓库能够审慎走向开源，而不夸大已经验证的事实。
 
+沉淀可复用的研发方法时，把通用判断和虚构验证场景归入现有所有者，源项目继续
+保持私有。[方法提炼](references/reusable-method-extraction.md)说明归属、仓库复用、
+更名迁移和准确项目描述的边界。
+
 <!-- icarus-release-fact: dynamic -->
 公开物料与状态请查看
 [最新 GitHub Release](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/latest)
@@ -88,7 +92,7 @@ pwsh -NoProfile -File scripts/package.ps1
 ## 配套项目
 
 - [AI-first Vibe Coding Skill](https://github.com/boomkalakasha/ai-first-vibe-coding-skill)：适合 Agent 实现、独立复核完成后，把项目送入开源发布门禁。
-- [Icarus AI Spring Scaffold](https://github.com/boomkalakasha/icarus-ai-spring-scaffold)：适合需要安全、可审查 Java 17 服务起点的新项目。
+- [Icarus Harness Java Scaffold](https://github.com/boomkalakasha/Icarus-harness-java-scaffold)：适合需要安全、可审查 Java 17 服务起点的新项目。
 
 ## 明确不承诺的内容
 

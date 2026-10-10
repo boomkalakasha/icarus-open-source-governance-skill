@@ -12,7 +12,14 @@
         "Does not create a public repository, tag, or release before gates pass",
         "Produces a bounded local candidate and rollback path"
       ],
-      "required_markers": ["DOCUMENTED_ONLY", "PUBLIC_RELEASE_BLOCKED", "FACT", "INFERENCE", "NOT_VERIFIED", "BRAND_OPTIONAL"]
+      "required_markers": [
+        "DOCUMENTED_ONLY",
+        "PUBLIC_RELEASE_BLOCKED",
+        "FACT",
+        "INFERENCE",
+        "NOT_VERIFIED",
+        "BRAND_OPTIONAL"
+      ]
     },
     {
       "id": "license-provenance-pressure",
@@ -25,7 +32,14 @@
         "Covers customer data, email, image metadata, company policy, and copied text",
         "States that the workflow is not legal advice"
       ],
-      "required_markers": ["DOCUMENTED_ONLY", "STOP_RELEASE", "FACT", "INFERENCE", "NOT_VERIFIED", "NOT_LEGAL_ADVICE"]
+      "required_markers": [
+        "DOCUMENTED_ONLY",
+        "STOP_RELEASE",
+        "FACT",
+        "INFERENCE",
+        "NOT_VERIFIED",
+        "NOT_LEGAL_ADVICE"
+      ]
     },
     {
       "id": "private-repo-near-miss",
@@ -37,7 +51,30 @@
         "Preserves separate authorization for Jenkins and internal releases",
         "Keeps secret and customer-data hygiene despite the repository being private"
       ],
-      "required_markers": ["DOCUMENTED_ONLY", "NON_TRIGGER", "INTERNAL_DELIVERY_SCOPE", "NO_PUBLIC_BRAND"]
+      "required_markers": [
+        "DOCUMENTED_ONLY",
+        "NON_TRIGGER",
+        "INTERNAL_DELIVERY_SCOPE",
+        "NO_PUBLIC_BRAND"
+      ]
+    },
+    {
+      "id": "private-method-extraction-existing-owners",
+      "prompt": "Promote the reusable architecture-optimization work methods from a private project into our existing public workflow, Java scaffold, report and governance assets. Keep the private implementation and raw work records private. A scaffold repository rename is authorized; assess whether another repository is necessary.",
+      "expected_output": "Extract generic decisions and synthetic cases into their existing owners, keep private source and raw records out, justify any independent repository lifecycle, and separate rename evidence from publication or production claims.",
+      "assertions": [
+        "Keeps private implementation and raw records out of public source",
+        "Uses existing owners for workflow, executable Java environment, reporting and governance",
+        "Does not invent a new repository just for terminology",
+        "Preserves history and tags during rename and verifies actual remote metadata",
+        "Does not infer publication maturity or deployment from a renamed project"
+      ],
+      "required_markers": [
+        "DOCUMENTED_ONLY",
+        "FACT",
+        "INFERENCE",
+        "NOT_VERIFIED"
+      ]
     }
   ]
 }

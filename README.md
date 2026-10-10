@@ -12,6 +12,11 @@ Before publishing an internal prototype, use this Skill to scan reachable histor
 
 Turn privacy, provenance, documentation, licensing, and release evidence into one executable, reviewable path from internal repository to public open-source candidate.
 
+When publishing reusable engineering methods, retain their generic decision
+rules and synthetic checks in the existing owner; keep the source project
+private. [Method extraction](references/reusable-method-extraction.md) covers
+ownership, repository reuse, renaming and accurate project descriptions.
+
 <!-- icarus-release-fact: dynamic -->
 Public packages and status are available from the
 [latest GitHub Release](https://github.com/boomkalakasha/icarus-open-source-governance-skill/releases/latest)
@@ -99,7 +104,7 @@ never upgrades the public-host evidence.
 ## Companion projects
 
 - [AI-first Vibe Coding Skill](https://github.com/boomkalakasha/ai-first-vibe-coding-skill) — use it when agents are implementing and reviewing the project before the open-source gate.
-- [Icarus AI Spring Scaffold](https://github.com/boomkalakasha/icarus-ai-spring-scaffold) — use it when a new Java 17 service needs a safe, reviewable starting structure.
+- [Icarus Harness Java Scaffold](https://github.com/boomkalakasha/Icarus-harness-java-scaffold) — use it when a new Java 17 service needs a safe, reviewable starting structure.
 
 ## What it deliberately does not promise
 

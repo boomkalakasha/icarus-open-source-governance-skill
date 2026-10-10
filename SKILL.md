@@ -38,3 +38,4 @@ Return a small evidence ledger: scope, configuration, current-tree/history/packa
 - [Licensing boundaries](references/licensing.md)
 - [GitHub delivery](references/github-delivery.md)
 - [Evidence gates](references/evidence-gates.md)
+- [Reusable method extraction and repository evolution](references/reusable-method-extraction.md) — when general work methods move from a private task into existing public assets or a repository is renamed.

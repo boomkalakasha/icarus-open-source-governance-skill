@@ -6,6 +6,10 @@ All notable changes are documented here. Releases use immutable SemVer tags afte
 
 ### Added
 
+- Added a reference for method-only public extraction, existing capability
+  ownership, repository renaming and evidence-bounded project descriptions.
+  Private source projects are not made public by a method extraction request.
+
 - Add a distinct target-repository audit command and reusable composite action.
 - Validate target-required files, bilingual navigation, current tree and
   optional reachable history without requiring the target to look like this
