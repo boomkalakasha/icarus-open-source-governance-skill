@@ -322,11 +322,11 @@ class ValidateContractTests(unittest.TestCase):
         self.assertIn("Make the risks visible before making the project public.", english)
         self.assertIn("Before publishing an internal prototype", english)
         self.assertIn("https://github.com/boomkalakasha/ai-first-vibe-coding-skill", english)
-        self.assertIn("https://github.com/boomkalakasha/icarus-ai-spring-scaffold", english)
+        self.assertIn("https://github.com/boomkalakasha/Icarus-harness-java-scaffold", english)
         self.assertIn("先把风险说清楚，再把项目公开。", chinese)
         self.assertIn("在把内部原型公开之前", chinese)
         self.assertIn("https://github.com/boomkalakasha/ai-first-vibe-coding-skill", chinese)
-        self.assertIn("https://github.com/boomkalakasha/icarus-ai-spring-scaffold", chinese)
+        self.assertIn("https://github.com/boomkalakasha/Icarus-harness-java-scaffold", chinese)
 
     def test_readmes_explain_governance_outcomes_and_first_review_path(self):
         english = (ROOT / "README.md").read_text(encoding="utf-8")
